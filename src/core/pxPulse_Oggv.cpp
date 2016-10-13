@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "./ogg.h/codec.h"
-#include "./ogg.h/vorbisfile.h"
+#include <vorbis/vorbisfile.h>
 
 #include "./pxPulse_Oggv.h"
 

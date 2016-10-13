@@ -1,6 +1,5 @@
 //
 //  pxwrDoc.h
-//  ipxTest1
 //
 //  Created by Daisuke Amaya on 11/08/12.
 //  Copyright 2011 Pixel. All rights reserved.
@@ -33,11 +32,10 @@ public:
 	 pxwrDoc();
 	~pxwrDoc();
 	
-	//bool Open_res ( const char *dir, const char *name, const char* mode, bool b_resource );
-	bool Open_path( const char *path,                  const char* mode                  );
+	bool Open_path( const char *path, const char* mode );
 	bool SetRead  ( void *p, int len  );
 	bool Seek     ( int mode, int val );
-	void Close   ();
+	void Close    ();
 	
 	bool w   ( const void *p, int size, int num );
 	bool r   (       void *p, int size, int num );	

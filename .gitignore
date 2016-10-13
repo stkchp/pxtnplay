@@ -1,0 +1,9 @@
+# CMake
+CMakeCache.txt
+CMakeFiles
+CMakeFiles/*
+Makefile
+cmake_install.cmake
+
+# Exe
+pxtnplay

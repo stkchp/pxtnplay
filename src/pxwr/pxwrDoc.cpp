@@ -1,28 +1,8 @@
-//  Emscripten Support by printf_moriken '15/12/02
-//  pxwrDoc.cpp '11/08/12.
-
-//#include <StdAfx.h>
-
-#ifdef _WIN32
-#else 
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#endif
 
 #include "./pxwrDoc.h"
-
-/*
-#ifdef _WIN32
-
-#include "./pxw/pxwFile.h"
-
-#else
-
-#include "./pxm/pxmFile.h"
-
-#endif
-*/
 
 pxwrDoc::pxwrDoc()
 {
@@ -37,57 +17,14 @@ pxwrDoc::~pxwrDoc()
 	if( _b_file && _p ) fclose( (FILE*)_p );
 }
 
-/*
-pxwrDoc::pxwrDoc( const char *dir, const char *name, const char* mode )
-{
-	_fp = NULL;
-	
-	Open( dir, name, mode );
-}
-*/
-
 int pxwrDoc::FileSize() const { return _len; }
-
-/*
-void pxwrDoc::Delete_res( const char *dir, const char *name ) const
-{
-#ifdef _WIN32
-	pxwFile_Document_Delete( dir, name );
-#else
-
-#endif
-}
-
-bool pxwrDoc::Open_res( const char *dir, const char *name, const char* mode, bool b_resource )
-{
-	bool b_ret = false;
-	
-#ifdef _WIN32
-	_p = (char*)pxwFile_Document_Open( dir, name, mode, &_len );
-#else
-	if( b_resource ) _p = (char*)pxmFile_Resource_Open( dir, name, mode, &_len );
-	else             _p = (char*)pxmFile_Document_Open( dir, name, mode, &_len );
-#endif
-	
-	if( !_p ) goto End;
-
-	_ofs    =    0;
-	_b_file = true;
-	b_ret   = true;
-End:
-	return b_ret;
-}
-*/
 
 bool pxwrDoc::Open_path( const char *path, const char* mode )
 {
 	bool b_ret = false;
-	
-#ifdef _WIN32
-	_p = (char*)pxwFile_Document_Open( path, mode, &_len );
-#else
-	goto End;
-#endif
+
+	// TODO: write code to open file in linux.
+	// _p = (char*)pxwFile_Document_Open( path, mode, &_len );
 	
 	if( !_p ) goto End;
 
@@ -97,28 +34,6 @@ bool pxwrDoc::Open_path( const char *path, const char* mode )
 End:
 	return b_ret;
 }
-
-/*
-win32resource or file( HMODULE hModule, const char *type_name, const char *file_name )
-{
-	pxwrDoc doc;
-
-	if( !type_name )
-	{
-		if( !doc.Open_path( file_name, "rb" ) ) return false;
-	}
-	else
-	{
-		HRSRC   hResource;
-		HGLOBAL hGlobal;
-		hResource     = FindResource(   hModule, file_name, type_name );
-		int len       = SizeofResource( hModule, hResource );           
-		hGlobal       = LoadResource(   hModule, hResource );           
-		void *p       = (unsigned char *)LockResource( hGlobal );       
-		if( !doc.SetRead( p, len ) ) return false;
-	}
-}
-*/
 
 bool pxwrDoc::SetRead( void *p, int len )
 {
@@ -330,7 +245,6 @@ int  pxwrDoc::v_w  ( int val, int *p_add )
 }
 
 
-// �ϒ��ǂݍ��݁iunsigned int  �܂ł��ۏ؁j
 bool pxwrDoc::v_r  ( int *p  )
 {
 	if( !_p ) return false;
