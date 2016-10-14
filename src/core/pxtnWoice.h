@@ -45,43 +45,43 @@ enum pxtnVOICETYPE
 
 typedef struct
 {
-	long          smp_head_w ;
-	long          smp_body_w ;
-	long          smp_tail_w ;
-	unsigned char * p_smp_w  ;
+	s32 smp_head_w ;
+	s32 smp_body_w ;
+	s32 smp_tail_w ;
+	u8* p_smp_w    ;
 
-	unsigned char * p_env    ;
-	long          env_size   ;
-	long          env_release;
+	u8* p_env      ;
+	s32 env_size   ;
+	s32 env_release;
 }
 pxtnVOICEWORK;
 
 typedef struct
 {
-	int       fps     ;
-	int       head_num;
-	int       body_num;
-	int       tail_num;
-	s32POINT* points;
+	s32     fps     ;
+	s32     head_num;
+	s32     body_num;
+	s32     tail_num;
+	sPOINT* points;
 }
 pxtnVOICEENVELOPE;
 
 typedef struct
 {
-	int      num    ;
-	int      reso   ; // COODINATERESOLUTION
-	s32POINT *points;
+	s32     num   ;
+	s32     reso  ; // COODINATERESOLUTION
+	sPOINT* points;
 }
 pxtnVOICEWAVE;
 
 typedef struct
 {
-	int               basic_key  ;
-	int               volume     ;
-	int               pan        ;
-	float             correct    ;
-	unsigned long     voice_flags;
-	unsigned long     data_flags ;
+	s32 basic_key  ;
+	s32 volume     ;
+	s32 pan        ;
+	f32 correct    ;
+	u32 voice_flags;
+	u32 data_flags ;
 					  
 	pxtnVOICETYPE     type       ;
 	pxPulse_PCM       *p_pcm     ;
@@ -95,18 +95,18 @@ pxtnVOICEUNIT;
 
 typedef struct
 {
-	double smp_pos    ;       
-	float  offset_freq;
-	long   env_volume ;
-	long   life_count ;
-	long   on_count   ;
+	f64 smp_pos    ;       
+	f32 offset_freq;
+	s32 env_volume ;
+	s32 life_count ;
+	s32 on_count   ;
 
-	long   smp_count  ;
-	long   env_start  ;
-	long   env_pos    ;
-	long   env_release_clock;
+	s32 smp_count  ;
+	s32 env_start  ;
+	s32 env_pos    ;
+	s32 env_release_clock;
 
-	long   smooth_volume;
+	s32 smooth_volume;
 }
 pxtnVOICETONE;
 
@@ -115,32 +115,32 @@ class pxtnWoice
 {
 private:
 
-	int           _voice_num;
+	s32           _voice_num;
 	char          _name[ MAX_TUNEWOICENAME + 1 ];
 	pxtnWOICETYPE _type;
 	pxtnVOICEUNIT *_vcs ;
 	pxtnVOICEWORK *_vws ;
 
-	float         _x3x_correct;
-	int           _x3x_basic_key; // correct old-fmt when key-event
+	f32           _x3x_correct;
+	s32           _x3x_basic_key; // correct old-fmt when key-event
 
 public :
 	 pxtnWoice();
 	~pxtnWoice();
 
-	int           get_voice_num    () const;
-	float         get_x3x_correct  () const;
-	int           get_x3x_basic_key() const;
+	s32           get_voice_num    () const;
+	f32           get_x3x_correct  () const;
+	s32           get_x3x_basic_key() const;
 	pxtnWOICETYPE get_type         () const;
 	const char    *get_name        () const;
-	const pxtnVOICEUNIT *get_voice         ( int idx ) const;
-	pxtnVOICEUNIT       *get_voice_variable( int idx );
+	const pxtnVOICEUNIT *get_voice         ( s32 idx ) const;
+	pxtnVOICEUNIT       *get_voice_variable( s32 idx );
 
-	const pxtnVOICEWORK *get_work ( int idx ) const;
+	const pxtnVOICEWORK *get_work ( s32 idx ) const;
 
 	void set_name( const char *name );
 
-	bool Voice_Allocate( long voice_num );
+	bool Voice_Allocate( s32 voice_num );
 	void Voice_Release ();
 	bool Copy( pxtnWoice *p_dst ) const;
 	void Slim();
@@ -148,7 +148,7 @@ public :
 	bool Load( const char *path, pxtnWOICETYPE type, bool *pb_new_fmt );
 
 	
-	bool PTV_Write   ( pxwrDoc *p_doc, int *p_total     ) const;
+	bool PTV_Write   ( pxwrDoc *p_doc, s32 *p_total     ) const;
 	bool PTV_Read    ( pxwrDoc *p_doc, bool *pb_new_fmt );
 	bool PTV_Save    ( const char* path                 ) const;
 
@@ -165,8 +165,8 @@ public :
 	bool io_mateOGGV_r( pxwrDoc *p_doc, bool *pb_new_fmt );
 
 	bool Tone_Ready_sample  ( const pxPulse_NoiseBuilder *ptn_bldr  );
-	bool Tone_Ready_envelope( int sps );
-	bool Tone_Ready         ( const pxPulse_NoiseBuilder *ptn_bldr, int sps );
+	bool Tone_Ready_envelope( s32 sps );
+	bool Tone_Ready         ( const pxPulse_NoiseBuilder *ptn_bldr, s32 sps );
 };
 
 #endif

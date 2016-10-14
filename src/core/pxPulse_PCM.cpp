@@ -9,17 +9,17 @@
 
 typedef struct
 {
-	unsigned short formatID;      // PCM:0x0001
-	unsigned short ch;            // 
-	unsigned long  sps;           // 
-	unsigned long  byte_per_sec;  // byte per sec.
-	unsigned short block_size;    // 
-	unsigned short bps;           // bit per sample.
-	unsigned short ext;           // no use for pcm.
+	u16 formatID;      // PCM:0x0001
+	u16 ch;            // 
+	u32 sps;           // 
+	u32 byte_per_sec;  // byte per sec.
+	u16 block_size;    // 
+	u16 bps;           // bit per sample.
+	u16 ext;           // no use for pcm.
 }
 WAVEFORMATCHUNK;
 
-static bool _malloc_zero( void **pp, long size )
+static bool _malloc_zero( void **pp, s32 size )
 {
 	*pp = malloc( size ); if( !( *pp ) ) return false;
 	memset( *pp, 0, size );              return true;
@@ -60,11 +60,11 @@ void *pxPulse_PCM::Devolve_SamplingBuffer()
 }
 
 
-bool pxPulse_PCM::Make( long ch, long sps, long bps, long sample_num )
+bool pxPulse_PCM::Make( s32 ch, s32 sps, s32 bps, s32 sample_num )
 {
 	Release();
 
-	long size;
+	s32 size;
 	_p_smp    = NULL;
 	_ch       = ch ;
 	_sps      = sps;
@@ -77,7 +77,7 @@ bool pxPulse_PCM::Make( long ch, long sps, long bps, long sample_num )
 	if( _bps != 8 && _bps != 16 ) return false;
 	size = _smp_body * _bps * _ch / 8;
 
-	if( !( _p_smp = (unsigned char *)malloc( size ) ) ) return false;
+	if( !( _p_smp = (u8 *)malloc( size ) ) ) return false;
 
 	if( _bps == 8 ) memset( _p_smp, 128, size );
 	else            memset( _p_smp,   0, size );
@@ -89,10 +89,10 @@ bool pxPulse_PCM::Make( long ch, long sps, long bps, long sample_num )
 
 bool pxPulse_PCM::Load( const char *path )
 {
-	pxwrDoc         doc;
-	bool            b_ret = false;
-	char            buf[16];
-	unsigned long   size;
+	pxwrDoc doc;
+	bool    b_ret = false;
+	s8      buf[16];
+	u32     size;
 	WAVEFORMATCHUNK format;
 
 	_p_smp = NULL;
@@ -100,7 +100,7 @@ bool pxPulse_PCM::Load( const char *path )
 	if( !doc.Open_path( path, "rb" ) ) goto End;
 
 	// 'RIFFxxxxWAVEfmt '
-	if( !doc.r( buf, sizeof(char), 16 ) ) goto End;
+	if( !doc.r( buf, sizeof(s8), 16 ) ) goto End;
 
 	if( buf[ 0] != 'R' || buf[ 1] != 'I' || buf[ 2] != 'F' || buf[ 3] != 'F' ||
 		buf[ 8] != 'W' || buf[ 9] != 'A' || buf[10] != 'V' || buf[11] != 'E' ||
@@ -110,8 +110,8 @@ bool pxPulse_PCM::Load( const char *path )
 	}
 
 	// read format.
-	if( !doc.r( &size  , sizeof(unsigned long), 1 ) ) goto End;
-	if( !doc.r( &format,                    18, 1 ) ) goto End;
+	if( !doc.r( &size  , sizeof(u32),    1 ) ) goto End;
+	if( !doc.r( &format,          18,    1 ) ) goto End;
 	
 	if( format.formatID != 0x0001            ) goto End;// for only PCM
 	if( format.ch  != 1 && format.ch  !=  2  ) goto End;// ch : 1 or 2
@@ -119,14 +119,14 @@ bool pxPulse_PCM::Load( const char *path )
 
 
 	// find 'data'
-	if( !doc.Seek( SEEK_SET, 12 ) ) goto End; // skip 'RIFFxxxxWAVE'
+	if( !doc.Seek( SEEK_SET, 12 )            ) goto End; // skip 'RIFFxxxxWAVE'
 
 	while( 1 )
 	{
-		if( !doc.r( buf  , sizeof(char)         , 4 ) ) goto End;
-		if( !doc.r( &size, sizeof(unsigned long), 1 ) ) goto End;
+		if( !doc.r( buf  , sizeof(s8),  4 ) ) goto End;
+		if( !doc.r( &size, sizeof(u32), 1 ) ) goto End;
 		if( buf[0] == 'd' && buf[1] == 'a' && buf[2] == 't' && buf[3] == 'a' ) break;
-		if( !doc.Seek( SEEK_CUR, size ) ) goto End;
+		if( !doc.Seek( SEEK_CUR, size )     ) goto End;
 	}
 /*
 	_ch  = format.ch;
@@ -138,8 +138,8 @@ bool pxPulse_PCM::Load( const char *path )
 */
 	if( !Make( format.ch, format.sps, format.bps, size * 8 / format.bps / format.ch ) ) goto End;
 
-//	if( !( _p_smp = (unsigned char *)malloc( size ) ) ) goto End;
-	if( !doc.r( _p_smp, sizeof(unsigned char), size ) ) goto End;
+//	if( !( _p_smp = (u8 *)malloc( size ) ) ) goto End;
+	if( !doc.r( _p_smp, sizeof(u8), size ) ) goto End;
 
 	b_ret = true;
 
@@ -156,22 +156,22 @@ bool pxPulse_PCM::Save( const char *path, const char *pstrLIST ) const
 	WAVEFORMATCHUNK format;
 	pxwrDoc         doc;
 	bool            b_ret = false;
-	unsigned long   riff_size;
-	unsigned long   fact_size; // num sample.
-	unsigned long   list_size; // num list text.
-	unsigned long   isft_size;
-	unsigned long   sample_size;
+	u32             riff_size;
+	u32             fact_size; // num sample.
+	u32             list_size; // num list text.
+	u32             isft_size;
+	u32             sample_size;
 
 	bool bText;
 
-	char tag_RIFF[4] = {'R','I','F','F'};
-	char tag_WAVE[4] = {'W','A','V','E'};
-	char tag_fmt_[8] = {'f','m','t',' ', 0x12,0,0,0};
-	char tag_fact[8] = {'f','a','c','t', 0x04,0,0,0};
-	char tag_data[4] = {'d','a','t','a'};
+	s8 tag_RIFF[4] = {'R','I','F','F'};
+	s8 tag_WAVE[4] = {'W','A','V','E'};
+	s8 tag_fmt_[8] = {'f','m','t',' ', 0x12,0,0,0};
+	s8 tag_fact[8] = {'f','a','c','t', 0x04,0,0,0};
+	s8 tag_data[4] = {'d','a','t','a'};
 
-	char tag_LIST[4] = {'L','I','S','T'};
-	char tag_INFO[8] = {'I','N','F','O','I','S','F','T'};
+	s8 tag_LIST[4] = {'L','I','S','T'};
+	s8 tag_INFO[8] = {'I','N','F','O','I','S','F','T'};
 
 
 	if( pstrLIST && strlen( pstrLIST ) ) bText = true ;
@@ -180,11 +180,11 @@ bool pxPulse_PCM::Save( const char *path, const char *pstrLIST ) const
 	sample_size         = ( _smp_head + _smp_body + _smp_tail ) * _ch * _bps / 8;
 
 	format.formatID     = 0x0001;// PCM
-	format.ch           = (unsigned short) _ch;
-	format.sps          = (unsigned long ) _sps;
-	format.bps          = (unsigned short) _bps;
-	format.byte_per_sec = (unsigned long )(_sps * _bps * _ch / 8);
-	format.block_size   = (unsigned short)(             _bps * _ch / 8);
+	format.ch           = (u16) _ch;
+	format.sps          = (u32) _sps;
+	format.bps          = (u16) _bps;
+	format.byte_per_sec = (u32)(_sps * _bps * _ch / 8);
+	format.block_size   = (u16)(       _bps * _ch / 8);
 	format.ext          = 0;
 
 	fact_size = ( _smp_head + _smp_body + _smp_tail );
@@ -196,9 +196,9 @@ bool pxPulse_PCM::Save( const char *path, const char *pstrLIST ) const
 
 	if( bText )
 	{
-		isft_size = strlen( pstrLIST );
-		list_size = 4 + 4 + 4 + isft_size; // "INFO" + "ISFT" + size + ver_Text;
-		riff_size +=  8 + list_size;// 'LIST'
+		isft_size  = strlen( pstrLIST );
+		list_size  = 4 + 4 + 4 + isft_size; // "INFO" + "ISFT" + size + ver_Text;
+		riff_size +=         8 + list_size; // 'LIST'
 	}
 	else
 	{
@@ -209,26 +209,26 @@ bool pxPulse_PCM::Save( const char *path, const char *pstrLIST ) const
 	// open file..
 	if( !doc.Open_path( path, "wb" ) ) goto End;
 
-	if( !doc.w( tag_RIFF,     sizeof(char),           4 ) ) goto End;
-	if( !doc.w( &riff_size,   sizeof(unsigned long),  1 ) ) goto End;
-	if( !doc.w( tag_WAVE,     sizeof(char),           4 ) ) goto End;
-	if( !doc.w( tag_fmt_,     sizeof(char),           8 ) ) goto End;
-	if( !doc.w( &format,      18,                     1 ) ) goto End;
+	if( !doc.w( tag_RIFF,   sizeof(s8),  4 ) ) goto End;
+	if( !doc.w( &riff_size, sizeof(u32), 1 ) ) goto End;
+	if( !doc.w( tag_WAVE,   sizeof(s8),  4 ) ) goto End;
+	if( !doc.w( tag_fmt_,   sizeof(s8),  8 ) ) goto End;
+	if( !doc.w( &format,    18,          1 ) ) goto End;
 		
 	if( bText )
 	{
-		if( !doc.w( tag_LIST,     sizeof(char),           4 ) ) goto End;
-		if( !doc.w( &list_size,   sizeof(unsigned long),  1 ) ) goto End;
-		if( !doc.w( tag_INFO,     sizeof(char),           8 ) ) goto End;
-		if( !doc.w( &isft_size,   sizeof(unsigned long),  1 ) ) goto End;
-		if( !doc.w( pstrLIST,     sizeof(char),   isft_size ) ) goto End;
+		if( !doc.w( tag_LIST,   sizeof(s8),          4 ) ) goto End;
+		if( !doc.w( &list_size, sizeof(u32),         1 ) ) goto End;
+		if( !doc.w( tag_INFO,   sizeof(s8),          8 ) ) goto End;
+		if( !doc.w( &isft_size, sizeof(u32),         1 ) ) goto End;
+		if( !doc.w( pstrLIST,   sizeof(s8),  isft_size ) ) goto End;
 	}
 															   
-	if( !doc.w( tag_fact,     sizeof(char),           8 ) ) goto End;
-	if( !doc.w( &fact_size,   sizeof(unsigned long),  1 ) ) goto End;
-	if( !doc.w( tag_data,     sizeof(char),           4 ) ) goto End;
-	if( !doc.w( &sample_size, sizeof(long),           1 ) ) goto End;
-	if( !doc.w( _p_smp, sizeof(char), sample_size ) ) goto End;
+	if( !doc.w( tag_fact,     sizeof(s8),     8 ) ) goto End;
+	if( !doc.w( &fact_size,   sizeof(u32),    1 ) ) goto End;
+	if( !doc.w( tag_data,     sizeof(s8),     4 ) ) goto End;
+	if( !doc.w( &sample_size, sizeof(s32),    1 ) ) goto End;
+	if( !doc.w( _p_smp, sizeof(s8), sample_size ) ) goto End;
 
 	b_ret = true;
 
@@ -238,14 +238,14 @@ End:
 }
 
 // stereo / mono 
-bool pxPulse_PCM::_Convert_ChannelNum( long new_ch )
+bool pxPulse_PCM::_Convert_ChannelNum( s32 new_ch )
 {
-	unsigned char *p_work = NULL;
-	long          sample_size;
-	long          work_size;
-	long          a,b;
-	long          temp1;
-	long          temp2;
+	u8  *p_work = NULL;
+	s32  sample_size;
+	s32  work_size;
+	s32  a,b;
+	s32  temp1;
+	s32  temp2;
 
 	sample_size = ( _smp_head + _smp_body + _smp_tail ) * _ch * _bps / 8;
 
@@ -257,7 +257,7 @@ bool pxPulse_PCM::_Convert_ChannelNum( long new_ch )
 	if( new_ch == 2 )
 	{
 		work_size = sample_size * 2;
-		p_work     = (unsigned char *)malloc( work_size );
+		p_work    = (u8 *)malloc( work_size );
 		if( !p_work ) return false;
 
 		switch( _bps )
@@ -289,7 +289,7 @@ bool pxPulse_PCM::_Convert_ChannelNum( long new_ch )
 	else
 	{
 		work_size = sample_size / 2;
-		p_work     = (unsigned char *)malloc( work_size );
+		p_work    = (u8 *)malloc( work_size );
 		if( !p_work ) return false;
 
 		switch( _bps )
@@ -298,8 +298,8 @@ bool pxPulse_PCM::_Convert_ChannelNum( long new_ch )
 			b = 0;
 			for( a = 0; a < sample_size; a+= 2 )
 			{
-				temp1       = (long)_p_smp[a] + (long)_p_smp[a+1];
-				p_work[b  ] = (unsigned char)( temp1 / 2 );
+				temp1     = (s32)_p_smp[a] + (s32)_p_smp[a+1];
+				p_work[b] = (u8)( temp1 / 2 );
 				b++;
 			}
 			break;
@@ -307,9 +307,9 @@ bool pxPulse_PCM::_Convert_ChannelNum( long new_ch )
 			b = 0;
 			for( a = 0; a < sample_size; a += 4 )
 			{
-				temp1                  = *((short *)(&_p_smp[a  ]));
-				temp2                  = *((short *)(&_p_smp[a+2]));
-				*(short *)(&p_work[b]) = (short)( ( temp1 + temp2 ) / 2 );
+				temp1                = *((s16 *)(&_p_smp[a  ]));
+				temp2                = *((s16 *)(&_p_smp[a+2]));
+				*(s16 *)(&p_work[b]) =  (s16)( ( temp1 + temp2 ) / 2 );
 				b += 2;
 			}
 			break;
@@ -320,7 +320,7 @@ bool pxPulse_PCM::_Convert_ChannelNum( long new_ch )
 	free( _p_smp );
 	_p_smp = NULL;
 
-	if( !( _p_smp = (unsigned char*)malloc( work_size ) ) ){ free( p_work ); return false; }
+	if( !( _p_smp = (u8*)malloc( work_size ) ) ){ free( p_work ); return false; }
 	memcpy( _p_smp, p_work, work_size );
 	free( p_work );
 
@@ -331,14 +331,14 @@ bool pxPulse_PCM::_Convert_ChannelNum( long new_ch )
 }
 
 // change bps
-bool pxPulse_PCM::_Convert_BitPerSample( long new_bps )
+bool pxPulse_PCM::_Convert_BitPerSample( s32 new_bps )
 {
-	unsigned char *p_work;
-	long          sample_size;
-	long          work_size;
-	long          a,b;
+	u8  *p_work;
+	s32 sample_size;
+	s32 work_size;
+	s32 a,b;
         
-	long          temp1;
+	s32 temp1;
 
 	if( !_p_smp         ) return false;
 	if( _bps == new_bps ) return true ;
@@ -350,28 +350,28 @@ bool pxPulse_PCM::_Convert_BitPerSample( long new_bps )
 	// 16 to 8 --------
 	case  8:
 		work_size = sample_size / 2;
-		p_work     = (unsigned char *)malloc( work_size );
+		p_work    = (u8 *)malloc( work_size );
 		if( !p_work ) return false;
 		b = 0;
 		for( a = 0; a < sample_size; a += 2 )
 		{
-			temp1 = *((short*)(&_p_smp[a]));
-			temp1 = (temp1/0x100) + 128;
-			p_work[b] = (unsigned char)temp1;
+			temp1     = *((s16*)(&_p_smp[a]));
+			temp1     =  (temp1/0x100) + 128;
+			p_work[b] =  (u8)temp1;
 			b++;
 		}
 		break;
 	//  8 to 16 --------
 	case 16:
 		work_size = sample_size * 2;
-		p_work     = (unsigned char *)malloc( work_size );
+		p_work    = (u8 *)malloc( work_size );
 		if( !p_work ) return false;
 		b = 0;
 		for( a = 0; a < sample_size; a++ )
 		{
 			temp1 = _p_smp[a];
 			temp1 = ( temp1 - 128 ) * 0x100;
-			*((short *)(&p_work[b])) = (short)temp1;
+			*((s16 *)(&p_work[b])) = (s16)temp1;
 			b += 2;
 		}
 		break;
@@ -383,7 +383,7 @@ bool pxPulse_PCM::_Convert_BitPerSample( long new_bps )
 	free( _p_smp );
 	_p_smp = NULL;
 
-	if( !( _p_smp = (unsigned char*)malloc( work_size ) ) ){ free( p_work ); return false; }
+	if( !( _p_smp = (u8*)malloc( work_size ) ) ){ free( p_work ); return false; }
 	memcpy( _p_smp, p_work, work_size );
 	free( p_work );
 
@@ -394,37 +394,37 @@ bool pxPulse_PCM::_Convert_BitPerSample( long new_bps )
 }
 
 // sps
-bool pxPulse_PCM::_Convert_SamplePerSecond( long new_sps )
+bool pxPulse_PCM::_Convert_SamplePerSecond( s32 new_sps )
 {
-	bool           b_ret = false;
-	long           sample_num;
-	long           work_size;
+	bool  b_ret = false;
+	s32   sample_num;
+	s32   work_size;
 
-	long head_size, body_size, tail_size;
+	s32   head_size, body_size, tail_size;
 
-	unsigned char  *p1byte_data;
-	unsigned short *p2byte_data;
-	unsigned long  *p4byte_data;
+	u8   *p1byte_data;
+	u16  *p2byte_data;
+	u32  *p4byte_data;
 
-	unsigned char  *p1byte_work = NULL;
-	unsigned short *p2byte_work = NULL;
-	unsigned long  *p4byte_work = NULL;
+	u8   *p1byte_work = NULL;
+	u16  *p2byte_work = NULL;
+	u32  *p4byte_work = NULL;
 
 
-	long a, b;
+	s32   a, b;
 
 	if( !_p_smp         ) return false;
 	if( _sps == new_sps ) return true ;
 
-//	long old_smp = _smp_body;
+//	s32 old_smp = _smp_body;
 
 	head_size = _smp_head * _ch * _bps / 8;
 	body_size = _smp_body * _ch * _bps / 8;
 	tail_size = _smp_tail * _ch * _bps / 8;
 
-	head_size = (long)( ( (double)head_size * (double)new_sps + (double)(_sps) - 1 ) / _sps );
-	body_size = (long)( ( (double)body_size * (double)new_sps + (double)(_sps) - 1 ) / _sps );
-	tail_size = (long)( ( (double)tail_size * (double)new_sps + (double)(_sps) - 1 ) / _sps );
+	head_size = (s32)( ( (f64)head_size * (f64)new_sps + (f64)(_sps) - 1 ) / _sps );
+	body_size = (s32)( ( (f64)body_size * (f64)new_sps + (f64)(_sps) - 1 ) / _sps );
+	tail_size = (s32)( ( (f64)tail_size * (f64)new_sps + (f64)(_sps) - 1 ) / _sps );
 
 	work_size = head_size + body_size + tail_size;
 
@@ -436,11 +436,11 @@ bool pxPulse_PCM::_Convert_SamplePerSecond( long new_sps )
 		_smp_tail = tail_size  / 4;
 		sample_num      = work_size  / 4;
 		work_size       = sample_num * 4;
-		p4byte_data     = (unsigned long *)_p_smp;
+		p4byte_data     = (u32 *)_p_smp;
 		if( !_malloc_zero( (void **)&p4byte_work, work_size ) ) goto End;
 		for( a = 0; a < sample_num; a++ )
 		{
-			b = (long)( (double)a * (double)(_sps) / (double)new_sps );
+			b = (s32)( (f64)a * (f64)(_sps) / (f64)new_sps );
 			p4byte_work[a] = p4byte_data[b];
 		}
 
@@ -453,11 +453,11 @@ bool pxPulse_PCM::_Convert_SamplePerSecond( long new_sps )
 		_smp_tail = tail_size  / 1;
 		sample_num      = work_size  / 1;
 		work_size       = sample_num * 1;
-		p1byte_data     = (unsigned char *)_p_smp;
+		p1byte_data     = (u8 *)_p_smp;
 		if( !_malloc_zero( (void **)&p1byte_work, work_size ) ) goto End;
 		for( a = 0; a < sample_num; a++ )
 		{
-			b = (long)( (double)a * (double)(_sps) / (double)(new_sps) );
+			b = (s32)( (f64)a * (f64)(_sps) / (f64)(new_sps) );
 			p1byte_work[a] = p1byte_data[b];
 		}
 
@@ -471,11 +471,11 @@ bool pxPulse_PCM::_Convert_SamplePerSecond( long new_sps )
 		_smp_tail = tail_size  / 2;
 		sample_num      = work_size  / 2;
 		work_size       = sample_num * 2;
-		p2byte_data     = (unsigned short *)_p_smp;
+		p2byte_data     = (u16 *)_p_smp;
 		if( !_malloc_zero( (void **)&p2byte_work, work_size ) ) goto End;
 		for( a = 0; a < sample_num; a++ )
 		{
-			b = (long)( (double)a * (double)(_sps) / (double)new_sps );
+			b = (s32)( (f64)a * (f64)(_sps) / (f64)new_sps );
 			p2byte_work[a] = p2byte_data[b];
 		}
 
@@ -512,7 +512,7 @@ End:
 }
 
 // convert..
-bool pxPulse_PCM::Convert( long new_ch, long new_sps, long new_bps )
+bool pxPulse_PCM::Convert( s32 new_ch, s32 new_sps, s32 new_bps )
 {
 
 	if( !_Convert_ChannelNum     ( new_ch  ) ) return false;
@@ -531,9 +531,9 @@ bool pxPulse_PCM::Copy( pxPulse_PCM *p_dst ) const
 	return true;
 }
 
-bool pxPulse_PCM::Copy_( pxPulse_PCM *p_dst, long start, long end ) const
+bool pxPulse_PCM::Copy_( pxPulse_PCM *p_dst, s32 start, s32 end ) const
 {
-	long size, offset;
+	s32 size, offset;
 
 	if( _smp_head || _smp_tail ) return false;
 	if( !_p_smp ){ p_dst->Release(); return true; }
@@ -555,22 +555,22 @@ bool pxPulse_PCM::Copy_( pxPulse_PCM *p_dst, long start, long end ) const
 }
 
 
-int  pxPulse_PCM::get_ch      () const{ return _ch      ; };
-int  pxPulse_PCM::get_bps     () const{ return _bps     ; };
-int  pxPulse_PCM::get_sps     () const{ return _sps     ; };
-int  pxPulse_PCM::get_smp_body() const{ return _smp_body; };
-int  pxPulse_PCM::get_smp_head() const{ return _smp_head; };
-int  pxPulse_PCM::get_smp_tail() const{ return _smp_tail; };
+s32  pxPulse_PCM::get_ch      () const{ return _ch      ; };
+s32  pxPulse_PCM::get_bps     () const{ return _bps     ; };
+s32  pxPulse_PCM::get_sps     () const{ return _sps     ; };
+s32  pxPulse_PCM::get_smp_body() const{ return _smp_body; };
+s32  pxPulse_PCM::get_smp_head() const{ return _smp_head; };
+s32  pxPulse_PCM::get_smp_tail() const{ return _smp_tail; };
 
 const void *pxPulse_PCM::get_p_buf         () const{ return _p_smp; }
 void       *pxPulse_PCM::get_p_buf_variable() const{ return _p_smp; }
 
-float pxPulse_PCM::get_sec   () const
+f32 pxPulse_PCM::get_sec   () const
 {
-	return (float)(_smp_body+_smp_head+_smp_tail) / (float)_sps;
+	return (f32)(_smp_body+_smp_head+_smp_tail) / (f32)_sps;
 }
 
-int pxPulse_PCM::get_buf_size() const
+s32 pxPulse_PCM::get_buf_size() const
 {
 	return ( _smp_head + _smp_body + _smp_tail ) * _ch * _bps / 8;
 }

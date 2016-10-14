@@ -11,13 +11,13 @@
 #define _BASIC_FREQUENCY_INDEX ((_OCTAVE_NUM/2) * _KEY_PER_OCTAVE * _FREQUENCY_PER_KEY )
 #define _TABLE_SIZE            ( _OCTAVE_NUM    * _KEY_PER_OCTAVE * _FREQUENCY_PER_KEY )
 
-double pxPulse_Frequency::_GetDivideOctaveRate( long divi )
+f64 pxPulse_Frequency::_GetDivideOctaveRate( s32 divi )
 {
-	double parameter = 1.0;
-	double work;
-	double result;
-	double add;
-	long i, j, k;
+	f64 parameter = 1.0;
+	f64 work;
+	f64 result;
+	f64 add;
+	s32 i, j, k;
 
 	// double is 17keta.
 	for( i = 0; i < 17; i++ )
@@ -61,7 +61,7 @@ pxPulse_Frequency::~pxPulse_Frequency()
 bool pxPulse_Frequency::Init()
 {
 	bool b_ret = false;
-	double oct_table[ _OCTAVE_NUM ] =
+	f64 oct_table[ _OCTAVE_NUM ] =
 	{
 		0.00390625, //0  -8
 		0.0078125,  //1  -7 
@@ -81,12 +81,12 @@ bool pxPulse_Frequency::Init()
 		128,        //f   7
 	};
 
-	long   key;
-	long   f;
-	double oct_x24;
-	double work;
+	s32 key;
+	s32 f;
+	f64 oct_x24;
+	f64 work;
 
-	if( !( _freq_table = (float*)malloc( sizeof(float) * _TABLE_SIZE ) ) ) goto End;
+	if( !( _freq_table = (f32*)malloc( sizeof(f32) * _TABLE_SIZE ) ) ) goto End;
 
 	oct_x24 = _GetDivideOctaveRate( _KEY_PER_OCTAVE * _FREQUENCY_PER_KEY );
 
@@ -97,16 +97,16 @@ bool pxPulse_Frequency::Init()
 		{
 			work *= oct_x24;
 		}
-		_freq_table[ f ] = (float) work;
+		_freq_table[ f ] = (f32) work;
 	}
 	b_ret = true;
 End:
 	return b_ret;
 }
 
-float pxPulse_Frequency::Get( long key )
+f32 pxPulse_Frequency::Get( s32 key )
 {
-	long i;
+	s32 i;
 
 	i = (key + 0x6000) * _FREQUENCY_PER_KEY / 0x100;
 	if     ( i <            0 ) i = 0;
@@ -114,15 +114,15 @@ float pxPulse_Frequency::Get( long key )
 	return _freq_table[ i ];
 }
 
-float pxPulse_Frequency::Get2( long key )
+f32 pxPulse_Frequency::Get2( s32 key )
 {
-	long i = key >> 4;
+	s32 i = key >> 4;
 	if     ( i <            0 ) i = 0;
 	else if( i >= _TABLE_SIZE ) i = _TABLE_SIZE - 1;
 	return _freq_table[ i ];
 }
 
-const float* pxPulse_Frequency::GetDirect( long *p_size )
+const f32* pxPulse_Frequency::GetDirect( s32 *p_size )
 {
 	*p_size = _TABLE_SIZE;
 	return _freq_table;

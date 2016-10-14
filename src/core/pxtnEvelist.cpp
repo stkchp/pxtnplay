@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "./pxTypedef.h"
+
 #include "./pxtnEvelist.h"
 
 void pxtnEvelist::Release( void )
@@ -30,7 +32,7 @@ void pxtnEvelist::Clear( void )
 }
 
 
-bool pxtnEvelist::Allocate( int max_num )
+bool pxtnEvelist::Allocate( s32 max_num )
 {
 	pxtnEvelist::Release();
 	if( !(  _recs = (EVERECORD*)malloc( sizeof(EVERECORD) * max_num ) ) ) return false;
@@ -39,16 +41,16 @@ bool pxtnEvelist::Allocate( int max_num )
 	return true;
 }
 
-int  pxtnEvelist::get_Num_Max( void ) const
+s32  pxtnEvelist::get_Num_Max( void ) const
 {
 	if( !_recs ) return 0;
 	return _max_num;
 }
 
-int  pxtnEvelist::get_Max_Clock( void ) const
+s32  pxtnEvelist::get_Max_Clock( void ) const
 {
-	long max_clock = 0;
-	long clock;
+	s32 max_clock = 0;
+	s32 clock;
 
 	for( EVERECORD* p = _start; p; p = p->next )
 	{
@@ -61,43 +63,43 @@ int  pxtnEvelist::get_Max_Clock( void ) const
 
 }
 
-int  pxtnEvelist::get_Count( void ) const
+s32  pxtnEvelist::get_Count( void ) const
 {
 	if( !_recs || !_start ) return 0;
 
-	int    count = 0;
+	s32 count = 0;
 	for( EVERECORD* p = _start; p; p = p->next ) count++;
 	return count;
 }
 
-int  pxtnEvelist::get_Count( unsigned char kind, long value ) const
+s32  pxtnEvelist::get_Count( u8 kind, s32 value ) const
 {
 	if( !_recs ) return 0;
 
-	int count = 0;
+	s32 count = 0;
 	for( EVERECORD* p = _start; p; p = p->next ){ if( p->kind == kind && p->value == value ) count++; }
 	return count;
 }
 
-int  pxtnEvelist::get_Count( unsigned char unit_no ) const
+s32  pxtnEvelist::get_Count( u8 unit_no ) const
 {
 	if( !_recs ) return 0;
 
-	int count = 0;
+	s32 count = 0;
 	for( EVERECORD* p = _start; p; p = p->next ){ if( p->unit_no == unit_no ) count++; }
 	return count;
 }
 
-int  pxtnEvelist::get_Count( unsigned char unit_no, unsigned char kind ) const
+s32  pxtnEvelist::get_Count( u8 unit_no, u8 kind ) const
 {
 	if( !_recs ) return 0;
 
-	int count = 0;
+	s32 count = 0;
 	for( EVERECORD* p = _start; p; p = p->next ){ if( p->unit_no == unit_no && p->kind == kind ) count++; }
 	return count;
 }
 
-int  pxtnEvelist::get_Count( long clock1, long clock2, unsigned char unit_no ) const
+s32  pxtnEvelist::get_Count( s32 clock1, s32 clock2, u8 unit_no ) const
 {
 	if( !_recs ) return 0;
 
@@ -111,7 +113,7 @@ int  pxtnEvelist::get_Count( long clock1, long clock2, unsigned char unit_no ) c
 		}
 	}
 
-	int count = 0;
+	s32 count = 0;
 	for(           ; p; p = p->next )
 	{
 		if( p->clock != clock1 && p->clock >= clock2 ) break;
@@ -121,7 +123,7 @@ int  pxtnEvelist::get_Count( long clock1, long clock2, unsigned char unit_no ) c
 }
 
 
-static long _DefaultKindValue( unsigned char kind )
+static s32 _DefaultKindValue( u8 kind )
 {
 	switch( kind )
 	{
@@ -139,20 +141,20 @@ static long _DefaultKindValue( unsigned char kind )
 	case EVENTKIND_VOICENO   : return EVENTDEFAULT_VOICENO  ;
 	case EVENTKIND_GROUPNO   : return EVENTDEFAULT_GROUPNO  ;
 	case EVENTKIND_CORRECT   :
-		float correct;
+		f32 correct;
 		correct = EVENTDEFAULT_CORRECT;
-		return *( (long*)&correct );
+		return *( (s32*)&correct );
 	case EVENTKIND_PAN_TIME  : return EVENTDEFAULT_PAN_TIME ;
 	}
 	return 0;
 }
 
-long pxtnEvelist::get_Value( long clock, unsigned char unit_no, unsigned char kind ) const
+s32 pxtnEvelist::get_Value( s32 clock, u8 unit_no, u8 kind ) const
 {
 	if( !_recs ) return 0;
 
 	EVERECORD* p;
-	long val = _DefaultKindValue( kind );
+	s32        val = _DefaultKindValue( kind );
 
 	for( p = _start; p; p = p->next )
 	{
@@ -170,7 +172,7 @@ const EVERECORD* pxtnEvelist::get_Records( void ) const
 }
 
 
-void pxtnEvelist::_SetRecord( EVERECORD* p_rec, EVERECORD* prev, EVERECORD* next, long clock, unsigned char unit_no, unsigned char kind, long value )
+void pxtnEvelist::_SetRecord( EVERECORD* p_rec, EVERECORD* prev, EVERECORD* next, s32 clock, u8 unit_no, u8 kind, s32 value )
 {
 	if( prev ) prev->next = p_rec;
 	else       _start     = p_rec;
@@ -184,9 +186,9 @@ void pxtnEvelist::_SetRecord( EVERECORD* p_rec, EVERECORD* prev, EVERECORD* next
 	p_rec->value   = value  ;
 }
 
-static int _ComparePriority( unsigned char kind1, unsigned char kind2 )
+static s32 _ComparePriority( u8 kind1, u8 kind2 )
 {
-	static const int priority_table[ EVENTKIND_NUM ] =
+	static const s32 priority_table[ EVENTKIND_NUM ] =
 	{
 		  0,//EVENTKIND_NULL  = 0
 		 50,//EVENTKIND_ON       
@@ -217,13 +219,13 @@ void pxtnEvelist::_CutRecord( EVERECORD* p_rec )
 	p_rec->kind = EVENTKIND_NULL;
 }
 
-bool pxtnEvelist::Record_Add_f( long clock, unsigned char unit_no, unsigned char kind, float value_f )
+bool pxtnEvelist::Record_Add_f( s32 clock, u8 unit_no, u8 kind, f32 value_f )
 {
-	long value = *( (long*)(&value_f) );
+	s32 value = *( (s32*)(&value_f) );
 	return Record_Add_i( clock, unit_no, kind, value );
 }
 
-bool pxtnEvelist::Record_Add_i( long clock, unsigned char unit_no, unsigned char kind, long value )
+bool pxtnEvelist::Record_Add_i( s32 clock, u8 unit_no, u8 kind, s32 value )
 {
 	if( !_recs ) return false;
 
@@ -232,7 +234,7 @@ bool pxtnEvelist::Record_Add_i( long clock, unsigned char unit_no, unsigned char
 	EVERECORD* p_next = NULL;
 
 	// 空き検索
-	for( int r = 0; r < _max_num; r++ )
+	for( s32 r = 0; r < _max_num; r++ )
 	{
 		if( _recs[ r ].kind == EVENTKIND_NULL )
 		{
@@ -302,11 +304,11 @@ bool pxtnEvelist::Record_Add_i( long clock, unsigned char unit_no, unsigned char
 	return true;
 }
 
-int pxtnEvelist::Record_Delete( long clock1, long clock2, unsigned char unit_no, unsigned char kind )
+s32 pxtnEvelist::Record_Delete( s32 clock1, s32 clock2, u8 unit_no, u8 kind )
 {
 	if( !_recs  ) return 0;
 
-	int count = 0;
+	s32 count = 0;
 
 	for( EVERECORD* p = _start; p; p = p->next )
 	{
@@ -330,11 +332,11 @@ int pxtnEvelist::Record_Delete( long clock1, long clock2, unsigned char unit_no,
 	return count;
 }
 
-int pxtnEvelist::Record_Delete( long clock1, long clock2, unsigned char unit_no )
+s32 pxtnEvelist::Record_Delete( s32 clock1, s32 clock2, u8 unit_no )
 {
 	if( !_recs  ) return 0;
 
-	int count = 0;
+	s32 count = 0;
 
 	for( EVERECORD* p = _start; p; p = p->next )
 	{
@@ -356,11 +358,11 @@ int pxtnEvelist::Record_Delete( long clock1, long clock2, unsigned char unit_no 
 }
 
 
-int pxtnEvelist::Record_UnitNo_Miss( unsigned char unit_no )
+s32 pxtnEvelist::Record_UnitNo_Miss( u8 unit_no )
 {
 	if( !_recs  ) return 0;
 
-	int count = 0;
+	s32 count = 0;
 
 	for( EVERECORD* p = _start; p; p = p->next )
 	{
@@ -370,20 +372,20 @@ int pxtnEvelist::Record_UnitNo_Miss( unsigned char unit_no )
 	return count;
 }
 
-int pxtnEvelist::Record_UnitNo_Set( unsigned char unit_no )
+s32 pxtnEvelist::Record_UnitNo_Set( u8 unit_no )
 {
 	if( !_recs  ) return 0;
 
-	int count = 0;
+	s32 count = 0;
 	for( EVERECORD* p = _start; p; p = p->next ){ p->unit_no = unit_no; count++; }
 	return count;
 }
 
-int pxtnEvelist::Record_UnitNo_Replace( unsigned char old_u, unsigned char new_u )
+s32 pxtnEvelist::Record_UnitNo_Replace( u8 old_u, u8 new_u )
 {
 	if( !_recs  ) return 0;
 
-	long count = 0;
+	s32 count = 0;
 	
 	if( old_u == new_u ) return 0;
 	if( old_u <  new_u )
@@ -407,11 +409,11 @@ int pxtnEvelist::Record_UnitNo_Replace( unsigned char old_u, unsigned char new_u
 }
 
 
-int pxtnEvelist::Record_Value_Set( long clock1, long clock2, unsigned char unit_no, unsigned char kind, long value )
+s32 pxtnEvelist::Record_Value_Set( s32 clock1, s32 clock2, u8 unit_no, u8 kind, s32 value )
 {
 	if( !_recs  ) return 0;
 
-	long count = 0;
+	s32 count = 0;
 
 	for( EVERECORD* p = _start; p; p = p->next )
 	{
@@ -425,13 +427,13 @@ int pxtnEvelist::Record_Value_Set( long clock1, long clock2, unsigned char unit_
 	return count;
 }
 
-int pxtnEvelist::Record_Value_Change( long clock1, long clock2, unsigned char unit_no, unsigned char kind, long value )
+s32 pxtnEvelist::Record_Value_Change( s32 clock1, s32 clock2, u8 unit_no, u8 kind, s32 value )
 {
 	if( !_recs  ) return 0;
 
-	long count = 0;
+	s32 count = 0;
 
-	long max, min;
+	s32 max, min;
 
 	switch( kind )
 	{
@@ -462,11 +464,11 @@ int pxtnEvelist::Record_Value_Change( long clock1, long clock2, unsigned char un
 	return count;
 }
 
-int pxtnEvelist::Record_Value_Omit( unsigned char kind, long value )
+s32 pxtnEvelist::Record_Value_Omit( u8 kind, s32 value )
 {
 	if( !_recs  ) return 0;
 
-	long count = 0;
+	s32 count = 0;
 	
 	for( EVERECORD* p = _start; p; p = p->next )
 	{
@@ -480,11 +482,11 @@ int pxtnEvelist::Record_Value_Omit( unsigned char kind, long value )
 }
 
 
-int pxtnEvelist::Record_Value_Replace( unsigned char kind, long old_value, long new_value )
+s32 pxtnEvelist::Record_Value_Replace( u8 kind, s32 old_value, s32 new_value )
 {
 	if( !_recs  ) return 0;
 
-	long count = 0;
+	s32 count = 0;
 	
 	if( old_value == new_value ) return 0;
 	if( old_value <  new_value )
@@ -514,16 +516,16 @@ int pxtnEvelist::Record_Value_Replace( unsigned char kind, long old_value, long 
 }
 
 
-int pxtnEvelist::Record_Clock_Shift( long clock, long shift, unsigned char unit_no )
+s32 pxtnEvelist::Record_Clock_Shift( s32 clock, s32 shift, u8 unit_no )
 {
 	if( !_recs  ) return 0;
 	if( !_start ) return 0;
 	if( !shift  ) return 0;
 
-	long          count = 0;
-	long          c;
-	unsigned char k;
-	long          v;
+	s32           count = 0;
+	s32           c;
+	u8            k;
+	s32           v;
 	EVERECORD*    p_next;
 	EVERECORD*    p_prev;
 	EVERECORD*    p = _start;
@@ -594,7 +596,7 @@ bool pxtnEvelist::Linear_Start( void )
 }
 
 
-void pxtnEvelist::Linear_Add_i(  long clock, unsigned char unit_no, unsigned char kind, long value )
+void pxtnEvelist::Linear_Add_i(  s32 clock, u8 unit_no, u8 kind, s32 value )
 {
 	EVERECORD* p = &_recs[ _linear ];
 
@@ -606,9 +608,9 @@ void pxtnEvelist::Linear_Add_i(  long clock, unsigned char unit_no, unsigned cha
 	_linear++;
 }
 
-void pxtnEvelist::Linear_Add_f( long clock, unsigned char unit_no, unsigned char kind, float value_f )
+void pxtnEvelist::Linear_Add_f( s32 clock, u8 unit_no, u8 kind, f32 value_f )
 {
-	long value = *( (long*)(&value_f) );
+	s32 value = *( (s32*)(&value_f) );
 	Linear_Add_i( clock, unit_no, kind, value );
 }
 
@@ -621,7 +623,7 @@ void pxtnEvelist::Linear_End( bool b_connect )
 
 	if( b_connect )
 	{
-		for( int r = 1; r < _max_num; r++ )
+		for( s32 r = 1; r < _max_num; r++ )
 		{
 			if( _recs[ r ].kind == EVENTKIND_NULL ) break;
 			_recs[ r     ].prev = &_recs[ r - 1 ];
@@ -647,7 +649,7 @@ void pxtnEvelist::x4x_Read_NewKind( void )
 	_p_x4x_rec = NULL;
 }
 
-void pxtnEvelist::x4x_Read_Add( long clock, unsigned char unit_no, unsigned char kind, long value )
+void pxtnEvelist::x4x_Read_Add( s32 clock, u8 unit_no, u8 kind, s32 value )
 {
 	EVERECORD* p_new  = NULL;
 	EVERECORD* p_prev = NULL;
@@ -700,13 +702,13 @@ void pxtnEvelist::x4x_Read_Add( long clock, unsigned char unit_no, unsigned char
 // ------------
 
 
-bool pxtnEvelist::io_Write( pxwrDoc *p_doc, long rough ) const
+bool pxtnEvelist::io_Write( pxwrDoc *p_doc, s32 rough ) const
 {
-	int  eve_num        = get_Count();
-	long ralatived_size = 0;
-	long absolute       = 0;
-	long clock;
-	long value;
+	s32 eve_num        = get_Count();
+	s32 ralatived_size = 0;
+	s32 absolute       = 0;
+	s32 clock;
+	s32 value;
 
 	// サイズのチェック
 	for( const EVERECORD* p = get_Records(); p; p = p->next )
@@ -722,9 +724,9 @@ bool pxtnEvelist::io_Write( pxwrDoc *p_doc, long rough ) const
 	}
 
 	// 書き込み
-	long size = sizeof(long) + ralatived_size;
-	if( !p_doc->w( &size   , sizeof(unsigned long), 1 ) ) return false;
-	if( !p_doc->w( &eve_num, sizeof(long)         , 1 ) ) return false;
+	s32 size = sizeof(s32) + ralatived_size;
+	if( !p_doc->w( &size   , sizeof(u32), 1 ) ) return false;
+	if( !p_doc->w( &eve_num, sizeof(s32)         , 1 ) ) return false;
 
 	absolute = 0;
 
@@ -736,8 +738,8 @@ bool pxtnEvelist::io_Write( pxwrDoc *p_doc, long rough ) const
 		else                                 value = p->value        ;
 
 		if( !p_doc->v_w( clock / rough, NULL )    ) return false;
-		if( !p_doc->w  ( &p->unit_no, sizeof(unsigned char), 1 ) ) return false;
-		if( !p_doc->w  ( &p->kind   , sizeof(unsigned char), 1 ) ) return false;
+		if( !p_doc->w  ( &p->unit_no, sizeof(u8), 1 ) ) return false;
+		if( !p_doc->w  ( &p->kind   , sizeof(u8), 1 ) ) return false;
 		if( !p_doc->v_w( value        , NULL )    ) return false;
 
 		absolute = p->clock;
@@ -748,19 +750,19 @@ bool pxtnEvelist::io_Write( pxwrDoc *p_doc, long rough ) const
 
 bool pxtnEvelist::io_Read( pxwrDoc *p_doc, bool *pb_new_fmt ) 
 {
-	long          size    ;
-	long          eve_num ;
+	s32 size    ;
+	s32 eve_num ;
 
 	if( !p_doc->r( &size   , 4, 1 ) ) return false;
 	if( !p_doc->r( &eve_num, 4, 1 ) ) return false;
 
-	int           clock   ;
-	long          absolute = 0;
-	unsigned char unit_no ;
-	unsigned char kind    ;
-	int           value   ;
+	s32 clock   ;
+	s32 absolute = 0;
+	u8  unit_no ;
+	u8  kind    ;
+	s32 value   ;
 
-	for( long e = 0; e < eve_num; e++ )
+	for( s32 e = 0; e < eve_num; e++ )
 	{
 		if( !p_doc->v_r( &clock         ) ) return false;
 		if( !p_doc->r  ( &unit_no, 1, 1 ) ) return false;
@@ -774,21 +776,21 @@ bool pxtnEvelist::io_Read( pxwrDoc *p_doc, bool *pb_new_fmt )
 	return true;
 }
 
-long pxtnEvelist::io_Read_EventNum( pxwrDoc *p_doc ) const
+s32 pxtnEvelist::io_Read_EventNum( pxwrDoc *p_doc ) const
 {
-	long          size   ;
-	long          eve_num;
+	s32 size   ;
+	s32 eve_num;
 
 	if( !p_doc->r( &size   , 4, 1 ) ) return 0;
 	if( !p_doc->r( &eve_num, 4, 1 ) ) return 0;
 
-	int           count = 0;
-	int           clock   ;
-	unsigned char unit_no ;
-	unsigned char kind    ;
-	int           value   ;
+	s32 count = 0;
+	s32 clock   ;
+	u8  unit_no ;
+	u8  kind    ;
+	s32 value   ;
 
-	for( long e = 0; e < eve_num; e++ )
+	for( s32 e = 0; e < eve_num; e++ )
 	{
 		if( !p_doc->v_r( &clock         ) ) return 0;
 		if( !p_doc->r  ( &unit_no, 1, 1 ) ) return 0;
@@ -808,11 +810,11 @@ long pxtnEvelist::io_Read_EventNum( pxwrDoc *p_doc ) const
 // イベント構造体(12byte) =================
 typedef struct
 {
-	unsigned short unit_index;
-	unsigned short event_kind;
-	unsigned short data_num;        // １イベントのデータ数。現在は 2 ( clock / volume ）
-	unsigned short rrr;
-	unsigned long  event_num;
+	u16 unit_index;
+	u16 event_kind;
+	u16 data_num;        // １イベントのデータ数。現在は 2 ( clock / volume ）
+	u16 rrr;
+	u32 event_num;
 }
 _x4x_EVENTSTRUCT;
 
@@ -821,11 +823,11 @@ _x4x_EVENTSTRUCT;
 typedef struct
 {
 //	EVENTLIST *p_event;
-	long      unit_no;
-	long      event_kind;
-	long      event_num;
-	long      data_num;
-	long      size;
+	s32       unit_no;
+	s32       event_kind;
+	s32       event_num;
+	s32       data_num;
+	s32       size;
 }
 _x4x_SIMPLEEVENTSTRUCT;
 
@@ -833,11 +835,11 @@ _x4x_SIMPLEEVENTSTRUCT;
 // イベント単純化 / オフセット変換
 static bool _x4x_SimplifyEvent(
 	_SIMPLEEVENTSTRUCT *p_simple_event,
-//	cls_EVENTLIST     *p_eventclass,
-	Evelist*          *p_evelist,
-	EVENTLIST         *p_event_read,
-    long unit_no, long kind,
-	bool bTailAbsolute, long rough )
+//	cls_EVENTLIST      *p_eventclass,
+	Evelist*           *p_evelist,
+	EVENTLIST          *p_event_read,
+	s32 unit_no, s32 kind,
+	bool bTailAbsolute, s32 rough )
 {
 	EVENTLIST *p_eve;
 
@@ -861,10 +863,10 @@ static bool _x4x_SimplifyEvent(
 
 	// オフセットに変換してからサイズを計算
 	{
-		long      absolute;
-		long      offset;
+		s32        absolute;
+		s32        offset;
 
-		p_eve = p_simple_event->p_event;
+		p_eve    = p_simple_event->p_event;
 		absolute = 0;
 		while( p_eve )
 		{
@@ -910,14 +912,14 @@ static bool _x4x_SimplifyEvent(
 }
 
 // 書き込み(イベント)
-bool TuneData_Unit_Write_x4x_EVENT( FILE *fp, EVENTLIST *p_event, long u, long kind, bool bTailAbsolute, long rough )
+bool TuneData_Unit_Write_x4x_EVENT( FILE *fp, EVENTLIST *p_event, s32 u, s32 kind, bool bTailAbsolute, s32 rough )
 {
 	cls_EVENTLIST       eve;
 	_EVENTSTRUCT        evnt;
 	_SIMPLEEVENTSTRUCT  simple_event;
-	long                e;
+	s32                 e;
 	EVENTLIST           *pe;
-	unsigned long       size;
+	u32                 size;
 
 	if( !fp ) return false;
 
@@ -930,19 +932,19 @@ bool TuneData_Unit_Write_x4x_EVENT( FILE *fp, EVENTLIST *p_event, long u, long k
 		return true;
 	}
 
-	evnt.unit_no    = (unsigned short)simple_event.unit_no;
-	evnt.event_kind = (unsigned short)simple_event.event_kind;
-	evnt.event_num  = (unsigned long )simple_event.event_num;
-	evnt.data_num   = (unsigned short)simple_event.data_num;
+	evnt.unit_no    = (u16)simple_event.unit_no;
+	evnt.event_kind = (u16)simple_event.event_kind;
+	evnt.event_num  = (u32)simple_event.event_num;
+	evnt.data_num   = (u16)simple_event.data_num;
 	evnt.rrr        = 0;
 
 	// 書き出し
 	size = sizeof( _EVENTSTRUCT ) + simple_event.size;
-	if( fwrite( &size, sizeof(unsigned long),  1, fp ) != 1 ) return false;
+	if( fwrite( &size, sizeof(u32),  1, fp ) != 1 ) return false;
 	if( fwrite( &evnt, sizeof( _EVENTSTRUCT ), 1, fp ) != 1 ) return false;
 
-	e     = 0;
-	pe = simple_event.p_event;
+	e    = 0;
+	pe   = simple_event.p_event;
 	while( pe )
 	{
 		if( !p_doc->v_w( pe->clock,      fp, NULL ) ) break;
@@ -964,11 +966,11 @@ bool TuneData_Unit_Write_x4x_EVENT( FILE *fp, EVENTLIST *p_event, long u, long k
 bool pxtnEvelist::io_Unit_Read_x4x_EVENT( pxwrDoc *p_doc, bool bTailAbsolute, bool bCheckRRR, bool *pb_new_fmt )
 {
 	_x4x_EVENTSTRUCT evnt;
-	int              clock;
-	int              value;
-	long             absolute;
-	long             e;
-	long             size;
+	s32              clock;
+	s32              value;
+	s32              absolute;
+	s32              e;
+	s32              size;
 
 	if( !p_doc->r( &size, 4,                          1 ) ) return false;
 	if( !p_doc->r( &evnt, sizeof( _x4x_EVENTSTRUCT ), 1 ) ) return false;
@@ -982,13 +984,13 @@ bool pxtnEvelist::io_Unit_Read_x4x_EVENT( pxwrDoc *p_doc, bool bTailAbsolute, bo
 //	p_unit = TuneData_Unit_GetPointer   ( evnt.unit_index ); if( !p_unit ) return false;
 
 	absolute = 0;
-	for( e = 0; e < (long)evnt.event_num; e++ )
+	for( e = 0; e < (s32)evnt.event_num; e++ )
 	{
 		if( !p_doc->v_r( &clock ) ) break;
 		if( !p_doc->v_r( &value ) ) break;
 		absolute += clock;
 		clock     = absolute;
-		x4x_Read_Add( clock, (unsigned char)evnt.unit_index, (unsigned char)evnt.event_kind, value );
+		x4x_Read_Add( clock, (u8)evnt.unit_index, (u8)evnt.event_kind, value );
 		if( bTailAbsolute && Evelist_Kind_IsTail( evnt.event_kind ) ) absolute += value;
 	}
 	if( e != evnt.event_num ) return false;
@@ -998,12 +1000,12 @@ bool pxtnEvelist::io_Unit_Read_x4x_EVENT( pxwrDoc *p_doc, bool bTailAbsolute, bo
 	return true;
 }
 
-long pxtnEvelist::io_Read_x4x_EventNum( pxwrDoc *p_doc ) const
+s32 pxtnEvelist::io_Read_x4x_EventNum( pxwrDoc *p_doc ) const
 {
 	_x4x_EVENTSTRUCT evnt;
-	int              work;
-	long             e;
-	long             size;
+	s32              work;
+	s32              e;
+	s32              size;
 
 	if( !p_doc->r( &size, 4,                          1 ) ) return false;
 	if( !p_doc->r( &evnt, sizeof( _x4x_EVENTSTRUCT ), 1 ) ) return false;
@@ -1011,7 +1013,7 @@ long pxtnEvelist::io_Read_x4x_EventNum( pxwrDoc *p_doc ) const
 	// support only 2
 	if( evnt.data_num != 2 ) return 0;
 
-	for( e = 0; e < (long)evnt.event_num; e++ )
+	for( e = 0; e < (s32)evnt.event_num; e++ )
 	{
 		if( !p_doc->v_r( &work ) ) break;
 		if( !p_doc->v_r( &work ) ) break;
@@ -1054,7 +1056,7 @@ long pxtnEvelist::io_Read_x4x_EventNum( pxwrDoc *p_doc ) const
 // global
 ///////////////////////
 
-bool Evelist_Kind_IsTail( long kind )
+bool Evelist_Kind_IsTail( s32 kind )
 {
 	if( kind == EVENTKIND_ON || kind == EVENTKIND_PORTAMENT ) return true;
 	return false;

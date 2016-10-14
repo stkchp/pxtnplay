@@ -6,25 +6,25 @@
 
 #include "./pxtnWoice.h"
 
-//                           01234567
+//                         01234567
 static const char *_code  = "PTVOICE-";
-//static long _version =  20050826;
-//static long _version =  20051101; // support coodinate
-static long _version   =  20060111; // support no-envelope
+//static s32     _version =  20050826;
+//static s32     _version =  20051101; // support coodinate
+static s32       _version =  20060111; // support no-envelope
 
-static bool _malloc_zero( void **pp, long size )
+static bool _malloc_zero( void **pp, s32 size )
 {
 	*pp = malloc( size ); if( !( *pp ) ) return false;
 	memset( *pp, 0, size );              return true;
 }
 
 
-static bool _Write_Wave( pxwrDoc *p_doc, const pxtnVOICEUNIT *p_vc, int *p_total )
+static bool _Write_Wave( pxwrDoc *p_doc, const pxtnVOICEUNIT *p_vc, s32 *p_total )
 {
 	bool b_ret = false;
-	long num, i, size;
-	char          sc;
-	unsigned char uc;
+	s32  num, i, size;
+	s8   sc;
+	u8   uc;
 
 	if( !p_doc->v_w( p_vc->type, p_total ) ) goto End;
 
@@ -37,8 +37,8 @@ static bool _Write_Wave( pxwrDoc *p_doc, const pxtnVOICEUNIT *p_vc, int *p_total
 		num = p_vc->wave.num;
 		for( i = 0; i < num; i++ )
 		{
-			uc = (char)p_vc->wave.points[ i ].x; if( !p_doc->w( &uc, 1, 1 ) ) goto End; (*p_total)++;
-			sc = (char)p_vc->wave.points[ i ].y; if( !p_doc->w( &sc, 1, 1 ) ) goto End; (*p_total)++;
+			uc = (s8)p_vc->wave.points[ i ].x; if( !p_doc->w( &uc, 1, 1 ) ) goto End; (*p_total)++;
+			sc = (s8)p_vc->wave.points[ i ].y; if( !p_doc->w( &sc, 1, 1 ) ) goto End; (*p_total)++;
 		}
 		break;
 
@@ -78,10 +78,10 @@ End:
 	return b_ret;
 }
 
-static bool _Write_Envelope( pxwrDoc *p_doc, const pxtnVOICEUNIT *p_vc, int *p_total )
+static bool _Write_Envelope( pxwrDoc *p_doc, const pxtnVOICEUNIT *p_vc, s32 *p_total )
 {
 	bool b_ret = false;
-	long num, i;
+	s32  num, i;
 
 	// envelope. (5)
 	if( !p_doc->v_w( p_vc->envelope.fps,      p_total ) ) goto End;
@@ -107,11 +107,11 @@ End:
 static bool _Read_Wave( pxwrDoc *p_doc, pxtnVOICEUNIT *p_vc )
 {
 	bool b_ret = false;
-	long i, num;
-	char          sc;
-	unsigned char uc;
+	s32  i, num;
+	s8   sc;
+	u8   uc;
 
-	if( !p_doc->v_r( (int*)&p_vc->type ) ) goto End;
+	if( !p_doc->v_r( (s32*)&p_vc->type ) ) goto End;
 
 	switch( p_vc->type )
 	{
@@ -120,7 +120,7 @@ static bool _Read_Wave( pxwrDoc *p_doc, pxtnVOICEUNIT *p_vc )
 		if( !p_doc->v_r( &p_vc->wave.num  ) ) goto End;
 		if( !p_doc->v_r( &p_vc->wave.reso ) ) goto End;
 		num = p_vc->wave.num;
-		if( !_malloc_zero( (void **)&p_vc->wave.points, sizeof(s32POINT) * num ) ) goto End;
+		if( !_malloc_zero( (void **)&p_vc->wave.points, sizeof(sPOINT) * num ) ) goto End;
 		for( i = 0; i < num; i++ )
 		{
 			if( !p_doc->r( &uc, 1, 1 ) ) goto End; p_vc->wave.points[ i ].x = uc;
@@ -133,11 +133,11 @@ static bool _Read_Wave( pxwrDoc *p_doc, pxtnVOICEUNIT *p_vc )
 
 		if( !p_doc->v_r( &p_vc->wave.num ) ) goto End;
 		num = p_vc->wave.num;
-		if( !_malloc_zero( (void **)&p_vc->wave.points, sizeof(s32POINT) * num ) ) goto End;
+		if( !_malloc_zero( (void **)&p_vc->wave.points, sizeof(sPOINT) * num ) ) goto End;
 		for( i = 0; i < num; i++ )
 		{
-			if( !p_doc->v_r( (int*)&p_vc->wave.points[ i ].x ) ) goto End;
-			if( !p_doc->v_r( (int*)&p_vc->wave.points[ i ].y ) ) goto End;
+			if( !p_doc->v_r( (s32*)&p_vc->wave.points[ i ].x ) ) goto End;
+			if( !p_doc->v_r( (s32*)&p_vc->wave.points[ i ].y ) ) goto End;
 		}
 		break;
 
@@ -154,8 +154,8 @@ static bool _Read_Wave( pxwrDoc *p_doc, pxtnVOICEUNIT *p_vc )
 		//if( !p_doc->v_r( &p_vc->pcm.smp_body ) ) goto End;
 		//if( !p_doc->v_r( &p_vc->pcm.smp_tail ) ) goto End;
 		//size = ( p_vc->pcm.smp_head + p_vc->pcm.smp_body + p_vc->pcm.smp_tail ) * p_vc->pcm.ch * p_vc->pcm.bps / 8;
-		//if( !_malloc_zero( (void **)&p_vc->pcm.p_smp,    size )          ) goto End;
-		//if( !p_doc->r(        p_vc->pcm.p_smp, 1, size ) ) goto End;
+		//if( !_malloc_zero( (void **)&p_vc->pcm.p_smp,         size )          ) goto End;
+		//if( !p_doc->r(        p_vc->pcm.p_smp, 1, size                      ) ) goto End;
 
 		//break;
 		}
@@ -173,7 +173,7 @@ End:
 static bool _Read_Envelope( pxwrDoc *p_doc, pxtnVOICEUNIT *p_vc )
 {
 	bool b_ret = false;
-	long num, i;
+	s32  num, i;
 
 	//p_vc->envelope. (5)
 	if( !p_doc->v_r( &p_vc->envelope.fps      ) ) goto End;
@@ -185,11 +185,11 @@ static bool _Read_Envelope( pxwrDoc *p_doc, pxtnVOICEUNIT *p_vc )
 	if( p_vc->envelope.tail_num != 1 ) goto End; // no suport
 
 	num = p_vc->envelope.head_num + p_vc->envelope.body_num + p_vc->envelope.tail_num;
-	if( !_malloc_zero( (void **)&p_vc->envelope.points,            sizeof(s32POINT) * num ) ) goto End;
+	if( !_malloc_zero( (void **)&p_vc->envelope.points,            sizeof(sPOINT) * num ) ) goto End;
 	for( i = 0; i < num; i++ )
 	{
-		if( !p_doc->v_r( (int*)&p_vc->envelope.points[ i ].x ) ) goto End;
-		if( !p_doc->v_r( (int*)&p_vc->envelope.points[ i ].y ) ) goto End;
+		if( !p_doc->v_r( (s32*)&p_vc->envelope.points[ i ].x ) ) goto End;
+		if( !p_doc->v_r( (s32*)&p_vc->envelope.points[ i ].y ) ) goto End;
 	}
 
 	b_ret = true;
@@ -204,18 +204,18 @@ End:
 // pubics..
 ////////////////////////
 
-bool pxtnWoice::PTV_Write( pxwrDoc *p_doc, int *p_total ) const
+bool pxtnWoice::PTV_Write( pxwrDoc *p_doc, s32 *p_total ) const
 
 {
-	bool            b_ret = false;
+	bool          b_ret = false;
 	pxtnVOICEUNIT *p_vc = NULL ;
-	unsigned long   work;
-	long            v;
-	int             total =     0;
+	u32           work;
+	s32           v;
+	s32           total =     0;
 
-	if( !p_doc->w( _code,                         1, 8 ) ) goto End;
-	if( !p_doc->w( &_version, sizeof(unsigned long), 1 ) ) goto End;
-	if( !p_doc->w( &total,    sizeof(long),          1 ) ) goto End;
+	if( !p_doc->w( _code,               1, 8 ) ) goto End;
+	if( !p_doc->w( &_version, sizeof(u32), 1 ) ) goto End;
+	if( !p_doc->w( &total,    sizeof(s32), 1 ) ) goto End;
 
 	work = 0;
 
@@ -245,7 +245,7 @@ bool pxtnWoice::PTV_Write( pxwrDoc *p_doc, int *p_total ) const
 
 	// total size
 	if( !p_doc->Seek( SEEK_CUR, -(total + 4) ) ) goto End;
-	if( !p_doc->w( &total, sizeof(long), 1 )   ) goto End;
+	if( !p_doc->w( &total, sizeof(s32),  1 )   ) goto End;
 	if( !p_doc->Seek( SEEK_CUR,  (total    ) ) ) goto End;
 
 	if( p_total ) *p_total = 16 + total;
@@ -259,17 +259,17 @@ End:
 
 bool pxtnWoice::PTV_Read( pxwrDoc *p_doc, bool *pb_new_fmt )
 {
-	bool            b_ret = false;
+	bool          b_ret = false;
 	pxtnVOICEUNIT *p_vc = NULL ;
-	unsigned char   code[ 8 ];
-	long            version      ;
-	int             work1, work2 ;
-	int             total, num   ;
+	u8            code[ 8 ];
+	s32           version      ;
+	s32           work1, work2 ;
+	s32           total, num   ;
 
 	if( !p_doc->r( code,                1, 8 ) ) goto End;
-	if( !p_doc->r( &version, sizeof(long), 1 ) ) goto End;
+	if( !p_doc->r( &version, sizeof(s32),  1 ) ) goto End;
 	if( memcmp( code, _code, 8 )               ) goto End;
-	if( !p_doc->r( &total,   sizeof(long), 1 ) ) goto End;
+	if( !p_doc->r( &total,   sizeof(s32),  1 ) ) goto End;
 
 	if( version > _version ){ *pb_new_fmt = true; goto End; }
 
@@ -281,7 +281,7 @@ bool pxtnWoice::PTV_Read( pxwrDoc *p_doc, bool *pb_new_fmt )
 	if( !p_doc->v_r    ( &num ) ) goto End;
 	if( !Voice_Allocate(  num ) ) goto End;
 
-	for( int v = 0; v < _voice_num; v++ )
+	for( s32 v = 0; v < _voice_num; v++ )
 	{
 		// p_ptvv-> (8)
 		p_vc = &_vcs[ v ];
@@ -291,8 +291,8 @@ bool pxtnWoice::PTV_Read( pxwrDoc *p_doc, bool *pb_new_fmt )
 		if( !p_doc->v_r( &p_vc->pan       ) ) goto End;
 		if( !p_doc->v_r( &work1           ) ) goto End;
 		memcpy( &p_vc->correct, &work1, sizeof( 4 ) );
-		if( !p_doc->v_r( (int*)&p_vc->voice_flags ) ) goto End;
-		if( !p_doc->v_r( (int*)&p_vc->data_flags  ) ) goto End;
+		if( !p_doc->v_r( (s32*)&p_vc->voice_flags ) ) goto End;
+		if( !p_doc->v_r( (s32*)&p_vc->data_flags  ) ) goto End;
 
 		// no support.
 		if( p_vc->voice_flags & PTV_VOICEFLAG_UNCOVERED ){ *pb_new_fmt = true; goto End; }
@@ -310,7 +310,7 @@ End:
 
 bool pxtnWoice::PTV_Save( const char* path ) const
 {
-	bool  b_ret = false;
+	bool    b_ret = false;
 	pxwrDoc doc;
 	if( !doc.Open_path( path, "wb" ) )  return false;
 	b_ret = PTV_Write( &doc, NULL ) ? true : false;

@@ -1,19 +1,21 @@
 #ifndef pxTypedef_H
 #define pxTypedef_H
 
+#include <cstdint>
+
 #ifndef SAFE_DELETE
 #define SAFE_DELETE(p){ if (p) { delete (p); (p)=NULL; } }
 #endif
 
-typedef	unsigned char   u8 ;
-typedef	signed char     s8 ;
-typedef	unsigned short  u16;
-typedef	signed short    s16;
-typedef	unsigned int    u32;
-typedef	signed int      s32;
+using u8  = std::uint8_t ;
+using s8  = std::int8_t  ;
+using u16 = std::uint16_t;
+using s16 = std::int16_t ;
+using u32 = std::uint32_t;
+using s32 = std::int32_t ;
 
-typedef	float           f32;
-typedef double          f64;
+using f32 = float ;
+using f64 = double;
 
 typedef struct
 {
@@ -40,11 +42,11 @@ typedef struct
 }
 fPOINT;
 
-typedef struct pxPOINT
+typedef struct 
 {
-    s32  x;
-    s32  y;
+	s32 x;
+	s32 y;
 }
-s32POINT;
+sPOINT;
 
 #endif

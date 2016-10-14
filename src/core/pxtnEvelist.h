@@ -43,14 +43,14 @@ enum
 
 typedef struct EVERECORD
 {
-	unsigned char  kind    ;
-	unsigned char  unit_no ;
-	unsigned char  reserve1;
-	unsigned char  reserve2;
-	long           value   ;
-	long           clock   ;
-	EVERECORD*     prev    ;
-	EVERECORD*     next    ;
+	u8         kind    ;
+	u8         unit_no ;
+	u8         reserve1;
+	u8         reserve2;
+	s32        value   ;
+	s32        clock   ;
+	EVERECORD* prev    ;
+	EVERECORD* next    ;
 }
 EVERECORD;
 
@@ -61,17 +61,17 @@ class pxtnEvelist
 
 private:
 
-	long       _max_num;
+	s32        _max_num;
 	EVERECORD* _recs   ;
 	EVERECORD* _start  ;
-	long       _linear ;
+	s32        _linear ;
 
 	EVERECORD* _p_x4x_rec;
 
 	pxtnEvelist(              const pxtnEvelist &src  ){               } // copy
 	pxtnEvelist & operator = (const pxtnEvelist &right){ return *this; } // substitution
 
-	void _SetRecord( EVERECORD* p_rec, EVERECORD* prev, EVERECORD* next, long clock, unsigned char unit_no, unsigned char kind, long value );
+	void _SetRecord( EVERECORD* p_rec, EVERECORD* prev, EVERECORD* next, s32 clock, u8 unit_no, u8 kind, s32 value );
 	void _CutRecord( EVERECORD* p_rec );
 
 public:
@@ -82,54 +82,54 @@ public:
 	 pxtnEvelist();
 	~pxtnEvelist();
 
-	bool Allocate( int max_num );
+	bool Allocate( s32 max_num );
 
-	int  get_Num_Max  () const;
-	int  get_Max_Clock() const;
-	int  get_Count(    ) const;
-	int  get_Count(                                                    unsigned char kind, long value ) const;
-	int  get_Count(                             unsigned char unit_no                                 ) const;
-	int  get_Count(                             unsigned char unit_no, unsigned char kind             ) const;
-	int  get_Count(   long clock1, long clock2, unsigned char unit_no                                 ) const;
-	long get_Value(   long clock ,              unsigned char unit_no, unsigned char kind             ) const;
+	s32 get_Num_Max  () const;
+	s32 get_Max_Clock() const;
+	s32 get_Count(    ) const;
+	s32 get_Count(                                     u8 kind, s32 value ) const;
+	s32 get_Count(                         u8 unit_no                     ) const;
+	s32 get_Count(                         u8 unit_no, u8 kind            ) const;
+	s32 get_Count( s32 clock1, s32 clock2, u8 unit_no                     ) const;
+	s32 get_Value( s32 clock ,             u8 unit_no, u8 kind            ) const;
 
 	const EVERECORD* get_Records( void ) const;
 
-	bool Record_Add_i( long clock,               unsigned char unit_no, unsigned char kind, long  value   );
-	bool Record_Add_f( long clock,               unsigned char unit_no, unsigned char kind, float value_f );
+	bool Record_Add_i( s32 clock,          u8 unit_no, u8 kind, s32 value   );
+	bool Record_Add_f( s32 clock,          u8 unit_no, u8 kind, f32 value_f );
 
 	bool Linear_Start( void );
-	void Linear_Add_i( long clock,                       unsigned char unit_no, unsigned char kind, long  value   );
-	void Linear_Add_f( long clock,                       unsigned char unit_no, unsigned char kind, float value_f );
-	void Linear_End(           bool b_connect );
+	void Linear_Add_i( s32 clock,          u8 unit_no, u8 kind, s32 value   );
+	void Linear_Add_f( s32 clock,          u8 unit_no, u8 kind, f32 value_f );
+	void Linear_End(   bool b_connect );
 
-	int  Record_Clock_Shift(   long clock,  long shift , unsigned char unit_no  ); // can't be under 0.
-	int  Record_Value_Set(     long clock1, long clock2, unsigned char unit_no, unsigned char kind, long value );
-	int  Record_Value_Change(  long clock1, long clock2, unsigned char unit_no, unsigned char kind, long value );
-	int  Record_Value_Omit(                                                     unsigned char kind, long value );
-	int  Record_Value_Replace(                                                  unsigned char kind, long old_value, long new_value ); 
-	int  Record_Delete(        long clock1, long clock2, unsigned char unit_no, unsigned char kind             );
-	int  Record_Delete(        long clock1, long clock2, unsigned char unit_no                                 );
+	s32 Record_Clock_Shift(   s32 clock,  s32 shift , u8 unit_no  ); // can't be under 0.
+	s32 Record_Value_Set(     s32 clock1, s32 clock2, u8 unit_no, u8 kind, s32 value );
+	s32 Record_Value_Change(  s32 clock1, s32 clock2, u8 unit_no, u8 kind, s32 value );
+	s32 Record_Value_Omit(                                        u8 kind, s32 value );
+	s32 Record_Value_Replace(                                     u8 kind, s32 old_value, s32 new_value ); 
+	s32 Record_Delete(        s32 clock1, s32 clock2, u8 unit_no, u8 kind            );
+	s32 Record_Delete(        s32 clock1, s32 clock2, u8 unit_no                     );
 
-	int  Record_UnitNo_Miss(                             unsigned char unit_no                                 ); // delete event has the unit-no
-	int  Record_UnitNo_Set(                              unsigned char unit_no                                 ); // set the unit-no
-	int  Record_UnitNo_Replace(                          unsigned char old_u, unsigned char new_u              ); // exchange unit
+	s32 Record_UnitNo_Miss(                           u8 unit_no                     ); // delete event has the unit-no
+	s32 Record_UnitNo_Set(                            u8 unit_no                     ); // set the unit-no
+	s32 Record_UnitNo_Replace(                        u8 old_u, u8 new_u             ); // exchange unit
 
 
-	bool io_Write( pxwrDoc *p_doc, long rough       ) const;
+	bool io_Write( pxwrDoc *p_doc, s32 rough        ) const;
 	bool io_Read ( pxwrDoc *p_doc, bool *pb_new_fmt ); 
-	long io_Read_EventNum( pxwrDoc *p_doc ) const;
+	s32  io_Read_EventNum( pxwrDoc *p_doc ) const;
 
 
 	bool x4x_Read_Start(   void );
 	void x4x_Read_NewKind( void );
-	void x4x_Read_Add(     long clock, unsigned char unit_no, unsigned char kind, long value );
+	void x4x_Read_Add(     s32 clock, u8 unit_no, u8 kind, s32 value );
 
 	bool io_Unit_Read_x4x_EVENT( pxwrDoc *p_doc, bool bTailAbsolute, bool bCheckRRR, bool *pb_new_fmt );
-	long io_Read_x4x_EventNum( pxwrDoc *p_doc ) const;
+	s32 io_Read_x4x_EventNum( pxwrDoc *p_doc ) const;
 
 };
 
-bool Evelist_Kind_IsTail( long kind );
+bool Evelist_Kind_IsTail( s32 kind );
 
 #endif

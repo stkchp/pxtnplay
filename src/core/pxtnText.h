@@ -3,6 +3,8 @@
 #ifndef pxtnText_H
 #define pxtnText_H
 
+#include "./pxTypedef.h"
+
 #include <pxwrDoc.h>
 
 class pxtnText
@@ -16,9 +18,9 @@ public :
 	pxtnText();
 	~pxtnText();
 
-	bool        set_comment( const char *p_comment );
+	bool        set_comment(  const char *p_comment );
 	const char *get_comment() const;
-	bool        set_name   (  const char *p_name   );
+	bool        set_name   (  const char *p_name    );
 	const char *get_name   () const;
 
 

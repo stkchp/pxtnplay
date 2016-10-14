@@ -17,7 +17,7 @@
 #define _VERSIONSIZE    16
 #define _CODESIZE        8
 
-//                                       0123456789012345
+//                                     0123456789012345
 static const char* _code_tune_x2x     = "PTTUNE--20050608";
 static const char* _code_tune_x3x     = "PTTUNE--20060115";
 static const char* _code_tune_x4x     = "PTTUNE--20060930";
@@ -134,10 +134,10 @@ pxtnService::~pxtnService()
 	SAFE_DELETE( master    );
 	SAFE_DELETE( evels     );
 	SAFE_DELETE( _ptn_bldr );
-	if( _delays ){ for( int i = 0; i < _delay_num; i++ ) SAFE_DELETE( _delays[ i ] ); free( _delays ); }
-	if( _ovdrvs ){ for( int i = 0; i < _ovdrv_num; i++ ) SAFE_DELETE( _ovdrvs[ i ] ); free( _ovdrvs ); }
-	if( _woices ){ for( int i = 0; i < _woice_num; i++ ) SAFE_DELETE( _woices[ i ] ); free( _woices ); }
-	if( _units  ){ for( int i = 0; i < _unit_num ; i++ ) SAFE_DELETE( _units [ i ] ); free( _units  ); }
+	if( _delays ){ for( s32 i = 0; i < _delay_num; i++ ) SAFE_DELETE( _delays[ i ] ); free( _delays ); }
+	if( _ovdrvs ){ for( s32 i = 0; i < _ovdrv_num; i++ ) SAFE_DELETE( _ovdrvs[ i ] ); free( _ovdrvs ); }
+	if( _woices ){ for( s32 i = 0; i < _woice_num; i++ ) SAFE_DELETE( _woices[ i ] ); free( _woices ); }
+	if( _units  ){ for( s32 i = 0; i < _unit_num ; i++ ) SAFE_DELETE( _units [ i ] ); free( _units  ); }
 }
 
 bool pxtnService::Init( bool b_reserve_evels )
@@ -195,40 +195,40 @@ void pxtnService::AdjustMeasNum()
 	master->AdjustMeasNum( evels->get_Max_Clock() );
 }
 
-int  pxtnService::Group_Num() const{ return _group_num; }
+s32  pxtnService::Group_Num() const{ return _group_num; }
 
 bool pxtnService::Tone_Ready()
 {
-	int   beat_num   = master->get_beat_num  ();
-	float beat_tempo = master->get_beat_tempo();
+	s32 beat_num   = master->get_beat_num  ();
+	f32 beat_tempo = master->get_beat_tempo();
 
-	for( int i = 0; i < _delay_num; i++ ){ if( !_delays[ i ]->Tone_Ready( beat_num, beat_tempo, _sps, _bps ) ) return false; }
-	for( int i = 0; i < _ovdrv_num; i++ ){      _ovdrvs[ i ]->Tone_Ready(); }
-	for( int i = 0; i < _woice_num; i++ ){ if( !_woices[ i ]->Tone_Ready( _ptn_bldr, _sps ) ) return false; }
+	for( s32 i = 0; i < _delay_num; i++ ){ if( !_delays[ i ]->Tone_Ready( beat_num, beat_tempo, _sps, _bps ) ) return false; }
+	for( s32 i = 0; i < _ovdrv_num; i++ ){      _ovdrvs[ i ]->Tone_Ready(); }
+	for( s32 i = 0; i < _woice_num; i++ ){ if( !_woices[ i ]->Tone_Ready( _ptn_bldr, _sps ) ) return false; }
 	return true;
 }
 
 void pxtnService::Tone_Clear()
 {
-	for( int i = 0; i < _delay_num; i++ ) _delays[ i ]->Tone_Clear();
-	for( int i = 0; i < _unit_num;  i++ ) _units [ i ]->Tone_Clear();
+	for( s32 i = 0; i < _delay_num; i++ ) _delays[ i ]->Tone_Clear();
+	for( s32 i = 0; i < _unit_num;  i++ ) _units [ i ]->Tone_Clear();
 }
 
 // ---------------------------
 // Delay..
 // ---------------------------
 
-int  pxtnService::Delay_Num() const{ return _delay_num; }
-int  pxtnService::Delay_Max() const{ return _delay_max; }
+s32  pxtnService::Delay_Num() const{ return _delay_num; }
+s32  pxtnService::Delay_Max() const{ return _delay_max; }
 
-bool pxtnService::Delay_Set( int idx, DELAYUNIT unit, float freq, float rate, int group )
+bool pxtnService::Delay_Set( s32 idx, DELAYUNIT unit, f32 freq, f32 rate, s32 group )
 {
 	if( idx >= _delay_num ) return false;
 	_delays[ idx ]->Set( unit, freq, rate, group );
 	return true;
 }
 
-bool pxtnService::Delay_Add( DELAYUNIT unit, float freq, float rate, int group )
+bool pxtnService::Delay_Add( DELAYUNIT unit, f32 freq, f32 rate, s32 group )
 {
 	if( _delay_num >= _delay_max ) return false;
 	_delays[ _delay_num ] = new pxtnDelay();
@@ -237,24 +237,24 @@ bool pxtnService::Delay_Add( DELAYUNIT unit, float freq, float rate, int group )
 	return true;
 }
 
-bool pxtnService::Delay_Remove( int idx )
+bool pxtnService::Delay_Remove( s32 idx )
 {
 	if( idx >= _delay_num ) return false;
 
 	SAFE_DELETE( _delays[ idx ] );
 	_delay_num--;
-	for( int i = idx; i < _delay_num; i++ ) _delays[ i ] = _delays[ i + 1 ];
+	for( s32 i = idx; i < _delay_num; i++ ) _delays[ i ] = _delays[ i + 1 ];
 	_delays[ _delay_num ] = NULL;
 	return true;
 }
 
-pxtnDelay *pxtnService::Delay_Get( int idx )
+pxtnDelay *pxtnService::Delay_Get( s32 idx )
 {
 	if( idx < 0 || idx >= _delay_num ) return NULL;
 	return _delays[ idx ];
 }
 
-bool pxtnService::Delay_ReadyTone( int idx )
+bool pxtnService::Delay_ReadyTone( s32 idx )
 {
 	if( idx < 0 || idx >= _delay_num ) return NULL;
 	return _delays[ idx ]->Tone_Ready( master->get_beat_num(), master->get_beat_tempo(), _sps, _bps );
@@ -265,17 +265,17 @@ bool pxtnService::Delay_ReadyTone( int idx )
 // Over Drive..
 // ---------------------------
 
-int  pxtnService::OverDrive_Num() const{ return _ovdrv_num; }
-int  pxtnService::OverDrive_Max() const{ return _ovdrv_max; }
+s32  pxtnService::OverDrive_Num() const{ return _ovdrv_num; }
+s32  pxtnService::OverDrive_Max() const{ return _ovdrv_max; }
 
-bool pxtnService::OverDrive_Set( int idx, float cut, float amp, int group )
+bool pxtnService::OverDrive_Set( s32 idx, f32 cut, f32 amp, s32 group )
 {
 	if( idx >= _ovdrv_num ) return false;
 	_ovdrvs[ idx ]->Set( cut, amp, group );
 	return true;
 }
 
-bool pxtnService::OverDrive_Add( float cut, float amp, int group )
+bool pxtnService::OverDrive_Add( f32 cut, f32 amp, s32 group )
 {
 	if( _ovdrv_num >= _ovdrv_max ) return false;
 	_ovdrvs[ _ovdrv_num ] = new pxtnOverDrive();
@@ -284,24 +284,24 @@ bool pxtnService::OverDrive_Add( float cut, float amp, int group )
 	return true;
 }
 
-bool pxtnService::OverDrive_Remove( int idx )
+bool pxtnService::OverDrive_Remove( s32 idx )
 {
 	if( idx >= _ovdrv_num ) return false;
 
 	SAFE_DELETE( _ovdrvs[ idx ] );
 	_ovdrv_num--;
-	for( int i = idx; i < _ovdrv_num; i++ ) _ovdrvs[ i ] = _ovdrvs[ i + 1 ];
+	for( s32 i = idx; i < _ovdrv_num; i++ ) _ovdrvs[ i ] = _ovdrvs[ i + 1 ];
 	_ovdrvs[ _ovdrv_num ] = NULL;
 	return true;
 }
 
-pxtnOverDrive *pxtnService::OverDrive_Get( int idx )
+pxtnOverDrive *pxtnService::OverDrive_Get( s32 idx )
 {
 	if( idx < 0 || idx >= _ovdrv_num ) return NULL;
 	return _ovdrvs[ idx ];
 }
 
-void pxtnService::OverDrive_ReadyTone( int idx )
+void pxtnService::OverDrive_ReadyTone( s32 idx )
 {
 	if( idx < 0 || idx >= _ovdrv_num ) return;
 	_ovdrvs[ idx ]->Tone_Ready();
@@ -311,22 +311,22 @@ void pxtnService::OverDrive_ReadyTone( int idx )
 // Woice..
 // ---------------------------
 
-int  pxtnService::Woice_Num() const{ return _woice_num; }
-int  pxtnService::Woice_Max() const{ return _woice_max; }
+s32  pxtnService::Woice_Num() const{ return _woice_num; }
+s32  pxtnService::Woice_Max() const{ return _woice_max; }
 
-const pxtnWoice *pxtnService::Woice_Get( int idx ) const
+const pxtnWoice *pxtnService::Woice_Get( s32 idx ) const
 {
 	if( idx < 0 || idx >= _woice_num ) return NULL;
 	return _woices[ idx ];
 }
-pxtnWoice       *pxtnService::Woice_Get_variable( int idx )
+pxtnWoice       *pxtnService::Woice_Get_variable( s32 idx )
 {
 	if( idx < 0 || idx >= _woice_num ) return NULL;
 	return _woices[ idx ];
 }
 
 
-bool pxtnService::Woice_Load( int idx, const char *path, pxtnWOICETYPE type, bool *pb_new_fmt )
+bool pxtnService::Woice_Load( s32 idx, const char *path, pxtnWOICETYPE type, bool *pb_new_fmt )
 {
 	if( idx < 0 || idx >= _woice_max ) return false;
 	if( idx > _woice_num ) return false;
@@ -335,25 +335,25 @@ bool pxtnService::Woice_Load( int idx, const char *path, pxtnWOICETYPE type, boo
 	return true;
 }
 
-bool pxtnService::Woice_ReadyTone( int idx )
+bool pxtnService::Woice_ReadyTone( s32 idx )
 {
 	if( idx < 0 || idx >= _woice_num ) return false;
 	return _woices[ idx ]->Tone_Ready( _ptn_bldr, _sps );
 }
 
-void pxtnService::Woice_Remove( int idx )
+void pxtnService::Woice_Remove( s32 idx )
 {
 	if( idx < 0 || idx >= _woice_num ) return;
 	SAFE_DELETE( _woices[ idx ] );
 	_woice_num--;
-	for( int i = idx; i < _woice_num; i++ ) _woices[ i ] = _woices[ i + 1 ];
+	for( s32 i = idx; i < _woice_num; i++ ) _woices[ i ] = _woices[ i + 1 ];
 	_woices[ _woice_num ] = NULL;
 }
 
-void pxtnService::Woice_Replace( int old_place, int new_place )
+void pxtnService::Woice_Replace( s32 old_place, s32 new_place )
 {
-	pxtnWoice        *p_w;
-	int             max_place;
+	pxtnWoice *p_w;
+	s32        max_place;
 
 	p_w       = _woices[ old_place ];
 	max_place = _woice_num - 1;
@@ -362,11 +362,11 @@ void pxtnService::Woice_Replace( int old_place, int new_place )
 
 	if( old_place < new_place )
 	{
-		for( int w = old_place; w < new_place; w++ ){ if( _woices[ w ] ) _woices[ w ] = _woices[ w + 1 ]; }
+		for( s32 w = old_place; w < new_place; w++ ){ if( _woices[ w ] ) _woices[ w ] = _woices[ w + 1 ]; }
 	}
 	else
 	{
-		for( int w = old_place; w > new_place; w-- ){ if( _woices[ w ] ) _woices[ w ] = _woices[ w - 1 ]; }
+		for( s32 w = old_place; w > new_place; w-- ){ if( _woices[ w ] ) _woices[ w ] = _woices[ w - 1 ]; }
 	}
 
 	_woices[ new_place ] = p_w;
@@ -375,15 +375,15 @@ void pxtnService::Woice_Replace( int old_place, int new_place )
 // Unit..
 // ---------------------------
 
-int  pxtnService::Unit_Num() const{ return _unit_num; }
-int  pxtnService::Unit_Max() const{ return _unit_max; }
+s32  pxtnService::Unit_Num() const{ return _unit_num; }
+s32  pxtnService::Unit_Max() const{ return _unit_max; }
 
-const pxtnUnit *pxtnService::Unit_Get( int idx ) const
+const pxtnUnit *pxtnService::Unit_Get( s32 idx ) const
 {
 	if( idx < 0 || idx >= _unit_num ) return NULL;
 	return _units[ idx ];
 }
-pxtnUnit       *pxtnService::Unit_Get_variable( int idx )
+pxtnUnit       *pxtnService::Unit_Get_variable( s32 idx )
 {
 	if( idx < 0 || idx >= _unit_num ) return NULL;
 	return _units[ idx ];
@@ -397,19 +397,19 @@ bool pxtnService::Unit_AddNew()
 	return true;
 }
 
-void pxtnService::Unit_Remove( int idx )
+void pxtnService::Unit_Remove( s32 idx )
 {
 	if( idx < 0 || idx >= _unit_num ) return;
 	SAFE_DELETE( _units[ idx ] );
 	_unit_num--;
-	for( int i = idx; i < _unit_num; i++ ) _units[ i ] = _units[ i + 1 ];
+	for( s32 i = idx; i < _unit_num; i++ ) _units[ i ] = _units[ i + 1 ];
 	_units[ _unit_num ] = NULL;
 }
 
-void pxtnService::Unit_Replace( int old_place, int new_place )
+void pxtnService::Unit_Replace( s32 old_place, s32 new_place )
 {
-	pxtnUnit        *p_w;
-	int             max_place;
+	pxtnUnit *p_w;
+	s32       max_place;
 
 	p_w       = _units[ old_place ];
 	max_place = _unit_num - 1;
@@ -418,11 +418,11 @@ void pxtnService::Unit_Replace( int old_place, int new_place )
 
 	if( old_place < new_place )
 	{
-		for( int w = old_place; w < new_place; w++ ){ if( _units[ w ] ) _units[ w ] = _units[ w + 1 ]; }
+		for( s32 w = old_place; w < new_place; w++ ){ if( _units[ w ] ) _units[ w ] = _units[ w + 1 ]; }
 	}
 	else
 	{
-		for( int w = old_place; w > new_place; w-- ){ if( _units[ w ] ) _units[ w ] = _units[ w - 1 ]; }
+		for( s32 w = old_place; w > new_place; w-- ){ if( _units[ w ] ) _units[ w ] = _units[ w - 1 ]; }
 	}
 
 	_units[ new_place ] = p_w;
@@ -430,16 +430,16 @@ void pxtnService::Unit_Replace( int old_place, int new_place )
 
 void pxtnService::Unit_SetOpratedAll( bool b )
 {
-	for( int u = 0; u < _unit_num; u++ )
+	for( s32 u = 0; u < _unit_num; u++ )
 	{
 		_units[ u ]->set_operated( b );
 		if( b ) _units[ u ]->set_played( true );
 	}
 }
 
-void pxtnService::Unit_Solo( int idx )
+void pxtnService::Unit_Solo( s32 idx )
 {
-	for( int u = 0; u < _unit_num; u++ )
+	for( s32 u = 0; u < _unit_num; u++ )
 	{
 		if( u == idx ) _units[ u ]->set_played( true  );
 		else           _units[ u ]->set_played( false );
@@ -451,14 +451,14 @@ void pxtnService::Unit_Solo( int idx )
 // Quality..
 // ---------------------------
 
-void pxtnService::Quality_Set( int ch, int sps, int bps )
+void pxtnService::Quality_Set( s32 ch, s32 sps, s32 bps )
 {
 	_ch  = ch ;
 	_sps = sps;
 	_bps = bps;
 }
 
-void pxtnService::Quality_Get( int *p_ch, int *p_sps, int *p_bps ) const
+void pxtnService::Quality_Get( s32 *p_ch, s32 *p_sps, s32 *p_bps ) const
 {
 	if( p_ch  ) *p_ch  = _ch ;
 	if( p_sps ) *p_sps = _sps;
@@ -466,7 +466,7 @@ void pxtnService::Quality_Get( int *p_ch, int *p_sps, int *p_bps ) const
 }
 
 
-static _enum_Tag _CheckTagCode( const char *p_code )
+static _enum_Tag _CheckTagCode( const s8 *p_code )
 {
 	if(      !memcmp( p_code, _code_antiOPER    , _CODESIZE ) ) return _TAG_antiOPER;
 	else if( !memcmp( p_code, _code_x1x_PROJ    , _CODESIZE ) ) return _TAG_x1x_PROJ;
@@ -501,10 +501,10 @@ void pxtnService::Clear( bool b_release_evels )
 	text->set_comment( "" );
 	evels->Clear     (    );
 
-	for( int i = 0; i < _delay_num; i++ ) SAFE_DELETE( _delays[ i ] ); _delay_num = 0;
-	for( int i = 0; i < _delay_num; i++ ) SAFE_DELETE( _ovdrvs[ i ] ); _ovdrv_num = 0;
-	for( int i = 0; i < _woice_num; i++ ) SAFE_DELETE( _woices[ i ] ); _woice_num = 0;
-	for( int i = 0; i < _unit_num ; i++ ) SAFE_DELETE( _units [ i ] ); _unit_num  = 0;
+	for( s32 i = 0; i < _delay_num; i++ ) SAFE_DELETE( _delays[ i ] ); _delay_num = 0;
+	for( s32 i = 0; i < _delay_num; i++ ) SAFE_DELETE( _ovdrvs[ i ] ); _ovdrv_num = 0;
+	for( s32 i = 0; i < _woice_num; i++ ) SAFE_DELETE( _woices[ i ] ); _woice_num = 0;
+	for( s32 i = 0; i < _unit_num ; i++ ) SAFE_DELETE( _units [ i ] ); _unit_num  = 0;
 
 	master->Reset();
 
@@ -571,14 +571,14 @@ End:
 	return b_ret;
 }
 
-bool pxtnService::_io_Read_OldUnit( pxwrDoc *p_doc, bool *pb_new_fmt, int ver        )
+bool pxtnService::_io_Read_OldUnit( pxwrDoc *p_doc, bool *pb_new_fmt, s32 ver        )
 {
 	if( !_units ) return false;
 	if( _unit_num >= _unit_max ){ *pb_new_fmt = true; return false; }
 
 	bool      b_ret = false;
 	pxtnUnit *unit  = new pxtnUnit();
-	int       group = 0;
+	s32       group = 0;
 
 	switch( ver )
 	{
@@ -589,9 +589,9 @@ bool pxtnService::_io_Read_OldUnit( pxwrDoc *p_doc, bool *pb_new_fmt, int ver   
 
 	if( group >= _group_num ) group = _group_num - 1;
 
-	evels->x4x_Read_Add( 0, (unsigned char)_unit_num, EVENTKIND_GROUPNO, (long)group     );
+	evels->x4x_Read_Add( 0, (u8)_unit_num, EVENTKIND_GROUPNO, (s32)group     );
 	evels->x4x_Read_NewKind();
-	evels->x4x_Read_Add( 0, (unsigned char)_unit_num, EVENTKIND_VOICENO, (long)_unit_num );
+	evels->x4x_Read_Add( 0, (u8)_unit_num, EVENTKIND_VOICENO, (s32)_unit_num );
 	evels->x4x_Read_NewKind();
 
 	b_ret = true;
@@ -607,25 +607,25 @@ End:
 
 typedef struct
 {
-	unsigned short woice_index;
-	unsigned short rrr;
-	char           name[ MAX_TUNEWOICENAME ];
+	u16 woice_index;
+	u16 rrr;
+	char  name[ MAX_TUNEWOICENAME ];
 }
 _ASSIST_WOICE;
 
-bool pxtnService::_io_assiWOIC_w( pxwrDoc *p_doc, int idx ) const
+bool pxtnService::_io_assiWOIC_w( pxwrDoc *p_doc, s32 idx ) const
 {
 	_ASSIST_WOICE assi;
-	long    size;
+	s32           size;
 
 	memset( &assi, 0, sizeof( _ASSIST_WOICE ) );
 	memcpy( assi.name, _woices[ idx ]->get_name(), MAX_TUNEWOICENAME );
-	assi.woice_index = (unsigned short)idx;
+	assi.woice_index = (u16)idx;
 	assi.rrr         = 0;
 
 	size = sizeof( _ASSIST_WOICE );
-	if( !p_doc->w( &size, sizeof(unsigned long), 1 ) ) return false;
-	if( !p_doc->w( &assi, size,                  1 ) ) return false;
+	if( !p_doc->w( &size, sizeof(u32), 1 ) ) return false;
+	if( !p_doc->w( &assi, size,        1 ) ) return false;
 
 	return true;
 }
@@ -633,11 +633,11 @@ bool pxtnService::_io_assiWOIC_w( pxwrDoc *p_doc, int idx ) const
 bool pxtnService::_io_assiWOIC_r( pxwrDoc *p_doc, bool *pb_new_fmt )
 {
 	_ASSIST_WOICE assi;
-	long          size;
+	s32           size;
 
-	if( !p_doc->r( &size, 4,                 1 )   ) return false;
+	if( !p_doc->r( &size, 4,                           1 )   ) return false;
 	if( size != sizeof( _ASSIST_WOICE ) ){ *pb_new_fmt = true; return false; }
-	if( !p_doc->r( &assi, sizeof( _ASSIST_WOICE ), 1 )   ) return false;
+	if( !p_doc->r( &assi, sizeof( _ASSIST_WOICE ),     1 )   ) return false;
 	if( assi.rrr ){ *pb_new_fmt = true; return false; }
 
 	if( assi.woice_index >= _woice_num ) return false;
@@ -657,25 +657,25 @@ bool pxtnService::_io_assiWOIC_r( pxwrDoc *p_doc, bool *pb_new_fmt )
 
 typedef struct
 {
-	unsigned short unit_index;
-	unsigned short rrr;
-	char           name[ MAX_TUNEUNITNAME ];
+	u16  unit_index;
+	u16  rrr;
+	char name[ MAX_TUNEUNITNAME ];
 }
 _ASSIST_UNIT;
 
-bool pxtnService::_io_assiUNIT_w( pxwrDoc *p_doc, int idx ) const
+bool pxtnService::_io_assiUNIT_w( pxwrDoc *p_doc, s32 idx ) const
 {
 	_ASSIST_UNIT assi;
-	long         size;
+	s32          size;
 
 	memset( &assi, 0, sizeof( _ASSIST_UNIT ) );
 	memcpy( assi.name, _units[ idx ]->get_name(), MAX_TUNEUNITNAME );
-	assi.unit_index = (unsigned short)idx;
+	assi.unit_index = (u16)idx;
 	assi.rrr        = 0;
 
 	size = sizeof( _ASSIST_UNIT );
-	if( !p_doc->w( &size, sizeof(unsigned long), 1 ) ) return false;
-	if( !p_doc->w( &assi, size,                  1 ) ) return false;
+	if( !p_doc->w( &size, sizeof(u32), 1 ) ) return false;
+	if( !p_doc->w( &assi, size,        1 ) ) return false;
 
 	return true;
 }
@@ -683,9 +683,9 @@ bool pxtnService::_io_assiUNIT_w( pxwrDoc *p_doc, int idx ) const
 bool pxtnService::_io_assiUNIT_r( pxwrDoc *p_doc, bool *pb_new_fmt )
 {
 	_ASSIST_UNIT assi;
-	long         size;
+	s32         size;
 
-	if( !p_doc->r( &size, 4,                 1 ) ) return false;
+	if( !p_doc->r( &size, 4,                      1 ) ) return false;
 	if( size != sizeof( _ASSIST_UNIT ) )
 	{
 		*pb_new_fmt = true;
@@ -710,31 +710,31 @@ bool pxtnService::_io_assiUNIT_r( pxwrDoc *p_doc, bool *pb_new_fmt )
 // -----
 typedef struct
 {
-	unsigned short num;
-	unsigned short rrr;
+	u16 num;
+	u16 rrr;
 }
 _NUM_UNIT;
 
 bool pxtnService::_io_UNIT_num_w( pxwrDoc *p_doc ) const
 {
 	_NUM_UNIT data;
-	long      size;
+	s32       size;
 
 	memset( &data, 0, sizeof( _NUM_UNIT ) );
 
-	data.num = (short)_unit_num;
+	data.num = (s16)_unit_num;
 
 	size = sizeof(_NUM_UNIT);
-	if( !p_doc->w( &size, sizeof(long), 1 ) ) return false;
-	if( !p_doc->w( &data, size        , 1 ) ) return false;
+	if( !p_doc->w( &size, sizeof(s32), 1 ) ) return false;
+	if( !p_doc->w( &data, size       , 1 ) ) return false;
 
 	return true;
 }
 
-int pxtnService::_io_UNIT_num_r( pxwrDoc *p_doc, bool *pb_new_fmt )
+s32 pxtnService::_io_UNIT_num_r( pxwrDoc *p_doc, bool *pb_new_fmt )
 {
 	_NUM_UNIT data;
-	long      size;
+	s32       size;
 
 	if( !p_doc->r( &size, 4,                   1 ) ) return -1;
 	if( size != sizeof( _NUM_UNIT ) ){ *pb_new_fmt = true; return -1; }
@@ -753,13 +753,13 @@ int pxtnService::_io_UNIT_num_r( pxwrDoc *p_doc, bool *pb_new_fmt )
 // save               //////////////////
 ////////////////////////////////////////
 
-bool pxtnService::Save( pxwrDoc *p_doc, bool b_tune, unsigned short exe_ver )
+bool pxtnService::Save( pxwrDoc *p_doc, bool b_tune, u16 exe_ver )
 {
-//	pxwrDoc          doc;
-//	int              unit_num;
-	bool             b_ret = false;
-	long             rough;
-	unsigned short   rrr   = 0;
+//	pxwrDoc      doc;
+//	s32          unit_num;
+	bool         b_ret = false;
+	s32          rough;
+	u16          rrr   = 0;
 
 	if( b_tune ) rough = 10;
 	else         rough =  1;
@@ -772,8 +772,8 @@ bool pxtnService::Save( pxwrDoc *p_doc, bool b_tune, unsigned short exe_ver )
 	else        { if( !p_doc->w( _code_proj_v5, 1, _VERSIONSIZE ) ){ _err = pxtnERR_io_w_Version; goto End; } }
 
 	// exe version
-	if( !p_doc->w( &exe_ver, sizeof(unsigned short), 1 ) ){ _err = pxtnERR_io_w_ExeVersion; goto End; }
-	if( !p_doc->w( &rrr    , sizeof(unsigned short), 1 ) ){ _err = pxtnERR_io_w_Dummy; goto End; }
+	if( !p_doc->w( &exe_ver, sizeof(u16), 1 ) ){ _err = pxtnERR_io_w_ExeVersion; goto End; }
+	if( !p_doc->w( &rrr    , sizeof(u16), 1 ) ){ _err = pxtnERR_io_w_Dummy; goto End; }
 
 	// master
 	if( !p_doc->w( _code_MasterV5    , 1, _CODESIZE ) ){ _err = pxtnERR_io_w_TagCode; goto End; }
@@ -794,25 +794,25 @@ bool pxtnService::Save( pxwrDoc *p_doc, bool b_tune, unsigned short exe_ver )
 	if( text->get_comment() )
 	{
 		if( !p_doc->w( _code_textCOMM, 1, _CODESIZE ) ){ _err = pxtnERR_io_w_TagCode; goto End; }
-		if( !text->Comment_w( p_doc               ) ){ _err = pxtnERR_io_w_Comment; goto End; }
+		if( !text->Comment_w( p_doc                 ) ){ _err = pxtnERR_io_w_Comment; goto End; }
 	}
 
 	// delay
-	for( int d = 0; d < _delay_num; d++ )
+	for( s32 d = 0; d < _delay_num; d++ )
 	{
 		if( !p_doc->w( _code_effeDELA, 1, _CODESIZE ) ){ _err = pxtnERR_io_w_TagCode; goto End; }
 		if( !_delays[ d ]->Write( p_doc )             ){ _err = pxtnERR_io_w_Delay  ; goto End; }
 	}
 
 	// overdrive
-	for( int o = 0; o < _ovdrv_num; o++ )
+	for( s32 o = 0; o < _ovdrv_num; o++ )
 	{
 		if( !p_doc->w( _code_effeOVER, 1, _CODESIZE ) ){ _err = pxtnERR_io_w_TagCode  ; goto End; }
 		if( !_ovdrvs[ o ]->Write( p_doc )             ){ _err = pxtnERR_io_w_OverDrive; goto End; }
 	}
 
 	// woice
-	for( int w = 0; w < _woice_num; w++ )
+	for( s32 w = 0; w < _woice_num; w++ )
 	{
 		pxtnWoice * p_w = _woices[ w ];
 
@@ -847,7 +847,7 @@ bool pxtnService::Save( pxwrDoc *p_doc, bool b_tune, unsigned short exe_ver )
 	if( !p_doc->w( _code_num_UNIT, 1, _CODESIZE ) ){ _err = pxtnERR_io_w_TagCode; goto End; }
 	if( !_io_UNIT_num_w( p_doc )                  ){ _err = pxtnERR_io_w_UnitNum; goto End; }
 
-	for( int u = 0; u < _unit_num; u++ )
+	for( s32 u = 0; u < _unit_num; u++ )
 	{
 		if( !b_tune && strlen( _units[ u ]->get_name() ) )
 		{
@@ -857,7 +857,7 @@ bool pxtnService::Save( pxwrDoc *p_doc, bool b_tune, unsigned short exe_ver )
 	}
 
 	{
-		int end_size = 0;
+		s32 end_size = 0;
 		if( !p_doc->w( _code_pxtoneND, 1, _CODESIZE ) ){ _err = pxtnERR_io_w_TagCode; goto End; }
 		if( !p_doc->w( &end_size     , 4,         1 ) ){ _err = pxtnERR_io_w_EndSize; goto End; }
 	}
@@ -879,7 +879,7 @@ bool pxtnService::_ReadTuneItems( pxwrDoc *p_doc )
 	bool b_ret     = false;
 	bool b_new_fmt = false;
 	bool b_end     = false;
-	char code[ _CODESIZE + 1 ] = {'\0'};
+	s8   code[ _CODESIZE + 1 ] = {'\0'};
 
 	/// must the unit before the voice.
 	while( !b_end )
@@ -894,9 +894,9 @@ bool pxtnService::_ReadTuneItems( pxwrDoc *p_doc )
 		// new -------
 		case _TAG_num_UNIT    :
 			{
-				int num = _io_UNIT_num_r( p_doc, &b_new_fmt );
+				s32 num = _io_UNIT_num_r( p_doc, &b_new_fmt );
 				if( num < 0 ){ _err = pxtnERR_io_r_UnitNum; goto End; }
-				for( int i = 0; i < num; i++ ){ _units[ i ] = new pxtnUnit(); }
+				for( s32 i = 0; i < num; i++ ){ _units[ i ] = new pxtnUnit(); }
 				_unit_num = num;
 				break;
 			}
@@ -932,7 +932,7 @@ bool pxtnService::_ReadTuneItems( pxwrDoc *p_doc )
 	for( const EVERECORD* p = TuneData_Event_get_Records(); p; p = p->next )
 	{
 		char str[ 100 ];
-		sprintf( str, "%08d, %d, %d, %d\n", p->clock, p->unit_no, p->kind, p->value );
+		sprs32f( str, "%08d, %d, %d, %d\n", p->clock, p->unit_no, p->kind, p->value );
 		OutputDebugString( str );
 	}
 */
@@ -948,10 +948,10 @@ End:
 
 #define _MAX_FMTVER_x1x_EVENTNUM 10000
 
-bool pxtnService::_ReadVersion( pxwrDoc *p_doc, _enum_FMTVER *p_fmt_ver, unsigned short *p_exe_ver )
+bool pxtnService::_ReadVersion( pxwrDoc *p_doc, _enum_FMTVER *p_fmt_ver, u16 *p_exe_ver )
 {
-	char version[ _VERSIONSIZE  ] = {'\0'};
-	unsigned short dummy;
+	char version[ _VERSIONSIZE ] = {'\0'};
+	u16  dummy;
 
 	if( !p_doc->r( version, 1, _VERSIONSIZE ) ){ _err = pxtnERR_io_r_Version; return false; }
 
@@ -968,8 +968,8 @@ bool pxtnService::_ReadVersion( pxwrDoc *p_doc, _enum_FMTVER *p_fmt_ver, unsigne
 	else                                                        { _err = pxtnERR_io_r_VerUnknown; return false; }
 
 	// exe version
-	if( !p_doc->r( p_exe_ver, sizeof(unsigned short), 1 ) ){ _err = pxtnERR_io_r_VersionExe; return false; }
-	if( !p_doc->r( &dummy   , sizeof(unsigned short), 1 ) ){ _err = pxtnERR_io_r_Dummy; return false; }
+	if( !p_doc->r( p_exe_ver, sizeof(u16), 1 ) ){ _err = pxtnERR_io_r_VersionExe; return false; }
+	if( !p_doc->r( &dummy   , sizeof(u16), 1 ) ){ _err = pxtnERR_io_r_Dummy; return false; }
 
 	return true;
 }
@@ -979,17 +979,17 @@ bool pxtnService::_x3x_CorrectKeyEvent()
 {
 	if( _unit_num > _woice_num ) return false;
 
-	for( long u = 0; u < _unit_num; u++ )
+	for( s32 u = 0; u < _unit_num; u++ )
 	{
 		if( u >= _woice_num ) return false;
 
-		int change_value = _woices[ u ]->get_x3x_basic_key() - EVENTDEFAULT_BASICKEY;
+		s32 change_value = _woices[ u ]->get_x3x_basic_key() - EVENTDEFAULT_BASICKEY;
 
-		if( !evels->get_Count( (unsigned char)u, (unsigned char)EVENTKIND_KEY ) )
+		if( !evels->get_Count( (u8)u, (u8)EVENTKIND_KEY ) )
 		{
-			evels->Record_Add_i( 0, (unsigned char)u, EVENTKIND_KEY, (long)0x6000 );
+			evels->Record_Add_i( 0, (u8)u, EVENTKIND_KEY, (s32)0x6000 );
 		}
-		evels->Record_Value_Change( 0, -1, (unsigned char)u, EVENTKIND_KEY, change_value );
+		evels->Record_Value_Change( 0, -1, (u8)u, EVENTKIND_KEY, change_value );
 	}
 	return true;
 }
@@ -999,10 +999,10 @@ bool pxtnService::_x3x_AddCorrectEvent()
 {
 	if( _unit_num > _woice_num ) return false;
 
-	for( int u = 0; u < _unit_num; u++ )
+	for( s32 u = 0; u < _unit_num; u++ )
 	{
-		float correct= _woices[ u ]->get_x3x_correct();
-		if( correct ) evels->Record_Add_f( 0, (unsigned char)u, EVENTKIND_CORRECT, correct );
+		f32 correct = _woices[ u ]->get_x3x_correct();
+		if( correct ) evels->Record_Add_f( 0, (u8)u, EVENTKIND_CORRECT, correct );
 	}
 
 	return true;
@@ -1010,7 +1010,7 @@ bool pxtnService::_x3x_AddCorrectEvent()
 
 void pxtnService::_x3x_SetVoiceNames()
 {
-	for( int i = 0; i < _woice_num; i++ )
+	for( s32 i = 0; i < _woice_num; i++ )
 	{
 		char name[ MAX_TUNEWOICENAME + 1 ];
 		sprintf( name, "voice_%02d", i );
@@ -1018,17 +1018,17 @@ void pxtnService::_x3x_SetVoiceNames()
 	}
 }
 
-long pxtnService::PreCountEvent( pxwrDoc *p_doc, long max_unit )
+s32 pxtnService::PreCountEvent( pxwrDoc *p_doc, s32 max_unit )
 {
-	bool           b_ret   = false;
-	bool           b_end   = false;
+	bool         b_ret   = false;
+	bool         b_end   = false;
 
-	long           count   = 0;
-	long           size;
-	char code   [ _CODESIZE + 1 ] = {'\0'};
+	s32          count   = 0;
+	s32          size;
+	s8           code[ _CODESIZE + 1 ] = {'\0'};
 
-	unsigned short exe_ver;
-	_enum_FMTVER   fmt_ver;
+	u16          exe_ver;
+	_enum_FMTVER fmt_ver;
 
 	if( !_ReadVersion( p_doc, &fmt_ver, &exe_ver ) ) goto End;
 	if( fmt_ver == _enum_FMTVER_x1x ){ count = _MAX_FMTVER_x1x_EVENTNUM; b_ret = true; goto End; }
@@ -1061,7 +1061,7 @@ long pxtnService::PreCountEvent( pxwrDoc *p_doc, long max_unit )
 		case _TAG_assiUNIT    :
 		case _TAG_assiWOIC    :
 
-			if( !p_doc->r( &size, sizeof(long), 1 ) ){ _err = pxtnERR_io_r_FactSize; goto End; }
+			if( !p_doc->r( &size, sizeof(s32), 1 ) ){ _err = pxtnERR_io_r_FactSize; goto End; }
 			if( !p_doc->Seek( SEEK_CUR, size )      ){ _err = pxtnERR_io_r_Seek    ; goto End; }
 			break;
 
@@ -1090,7 +1090,7 @@ End:
 bool pxtnService::Read( pxwrDoc *p_doc, bool bPermitPTTUNE )
 {
 	bool             b_ret = false;
-	unsigned short   exe_ver;
+	u16              exe_ver;
 	_enum_FMTVER     fmt_ver;
 
 	Clear( false );
@@ -1114,8 +1114,8 @@ bool pxtnService::Read( pxwrDoc *p_doc, bool bPermitPTTUNE )
 	if( !bPermitPTTUNE && master->get_beat_clock() != EVENTDEFAULT_BEATCLOCK ){ _err = pxtnERR_io_r_BeatClock; goto End; }
 
 	{
-		int clock1 = evels ->get_Max_Clock ();
-		int clock2 = master->get_last_clock();
+		s32 clock1 = evels ->get_Max_Clock ();
+		s32 clock2 = master->get_last_clock();
 
 		if( clock1 > clock2 ) master->AdjustMeasNum( clock1 );
 		else                  master->AdjustMeasNum( clock2 );
@@ -1144,17 +1144,17 @@ End:
 // project (36byte) ================
 typedef struct
 {
-	char           x1x_name[_MAX_PROJECTNAME_x1x];
+	char x1x_name[_MAX_PROJECTNAME_x1x];
 
-	float          x1x_beat_tempo;
-	unsigned short x1x_beat_clock;
-	unsigned short x1x_beat_num;
-	unsigned short x1x_beat_note;
-	unsigned short x1x_meas_num;
+	f32  x1x_beat_tempo;
+	u16  x1x_beat_clock;
+	u16  x1x_beat_num;
+	u16  x1x_beat_note;
+	u16  x1x_meas_num;
 
-	unsigned short x1x_channel_num;
-	unsigned short x1x_bps;
-	unsigned long  x1x_sps;
+	u16  x1x_channel_num;
+	u16  x1x_bps;
+	u32  x1x_sps;
 }
 _x1x_PROJECT;
 
@@ -1168,9 +1168,9 @@ _x1x_PROJECT;
 bool _x1x_Project_WriteFile( FILE *fp )
 {
 	_PROJECT prjc;
-	long     size;
-	long     beat_num, beat_clock;
-	float    beat_tempo;
+	s32      size;
+	s32      beat_num, beat_clock;
+	f32      beat_tempo;
 
 	if( !fp ) return false;
 
@@ -1178,19 +1178,19 @@ bool _x1x_Project_WriteFile( FILE *fp )
 	memset( &prjc, 0,  sizeof(_PROJECT) );
 	memcpy( prjc.x1x_name, TuneData_Text_Get_Name(), MAX_PROJECTNAME );
 
-	prjc.x1x_beat_clock  = (unsigned short)beat_clock;
-	prjc.x1x_beat_num    = (unsigned short)beat_num;
-	prjc.x1x_beat_tempo  =                 beat_tempo;
-	prjc.x1x_meas_num    = (unsigned short)_DUMMY_MEASNUM;
-	prjc.x1x_beat_note   = (unsigned short)_DUMMY_BEATNOTE;
-	prjc.x1x_bps         = (unsigned short)_DUMMY_BPS;
-	prjc.x1x_sps         = (unsigned long )_DUMMY_SPS;
-	prjc.x1x_channel_num = (unsigned short)_DUMMY_CHANNELNUM;
+	prjc.x1x_beat_clock  = (u16)beat_clock;
+	prjc.x1x_beat_num    = (u16)beat_num;
+	prjc.x1x_beat_tempo  =      beat_tempo;
+	prjc.x1x_meas_num    = (u16)_DUMMY_MEASNUM;
+	prjc.x1x_beat_note   = (u16)_DUMMY_BEATNOTE;
+	prjc.x1x_bps         = (u16)_DUMMY_BPS;
+	prjc.x1x_sps         = (u32)_DUMMY_SPS;
+	prjc.x1x_channel_num = (u16)_DUMMY_CHANNELNUM;
 
 	// prjc ----------
 	size = sizeof( _PROJECT );
-	if( fwrite( &size, sizeof(unsigned long),  1, fp ) != 1 ) return false;
-	if( fwrite( &prjc, size,                   1, fp ) != 1 ) return false;
+	if( fwrite( &size, sizeof(u32),  1, fp ) != 1 ) return false;
+	if( fwrite( &prjc, size,         1, fp ) != 1 ) return false;
 
 	return true;
 }
@@ -1199,10 +1199,10 @@ bool _x1x_Project_WriteFile( FILE *fp )
 bool pxtnService::_x1x_Project_Read( pxwrDoc *p_doc )
 {
 	_x1x_PROJECT prjc;
-	char     name[ _MAX_PROJECTNAME_x1x + 1 ];
-	long     beat_num, beat_clock;
-	long     size;
-	float    beat_tempo;
+	char         name[ _MAX_PROJECTNAME_x1x + 1 ];
+	s32          beat_num, beat_clock;
+	s32          size;
+	f32          beat_tempo;
 
 	memset( &prjc, 0, sizeof( _x1x_PROJECT ) );
 	if( !p_doc->r( &size, 4,                      1 ) ) return false;

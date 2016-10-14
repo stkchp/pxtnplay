@@ -5,28 +5,28 @@
 #include "./pxPulse_Noise.h"
 
 
-void pxPulse_Noise::set_smp_num_44k( int num )
+void pxPulse_Noise::set_smp_num_44k( s32 num )
 {
 	_smp_num_44k = num;
 }
 
-int pxPulse_Noise::get_unit_num() const
+s32 pxPulse_Noise::get_unit_num() const
 {
 	return _unit_num;
 }
 
-int pxPulse_Noise::get_smp_num_44k() const
+s32 pxPulse_Noise::get_smp_num_44k() const
 {
 	return _smp_num_44k;
 }
 
-float pxPulse_Noise::get_sec() const
+f32 pxPulse_Noise::get_sec() const
 {
-	return (float)_smp_num_44k / 44100;
+	return (f32)_smp_num_44k / 44100;
 }
 
 
-pxNOISEDESIGN_UNIT *pxPulse_Noise::get_unit( int u )
+pxNOISEDESIGN_UNIT *pxPulse_Noise::get_unit( s32 u )
 {
 	if( !_units || u < 0 || u >= _unit_num ) return NULL;
 	return &_units[ u ];
@@ -67,7 +67,7 @@ static void _FixUnit( pxNOISEDESIGN_OSCILLATOR *p_osc )
 void pxPulse_Noise::Fix()
 {
 	pxNOISEDESIGN_UNIT *p_unit;
-	long i, e;
+	s32 i, e;
 
 	if( _smp_num_44k > NOISEDESIGNLIMIT_SMPNUM ) _smp_num_44k = NOISEDESIGNLIMIT_SMPNUM;
 
@@ -92,9 +92,9 @@ void pxPulse_Noise::Fix()
 	}
 }
 
-int pxPulse_Noise::SamplingSize( int channel_num, int sps, int bps ) const
+s32 pxPulse_Noise::SamplingSize( s32 channel_num, s32 sps, s32 bps ) const
 {
-	int    smp_num = _smp_num_44k / ( 44100 / sps );
+	s32    smp_num = _smp_num_44k / ( 44100 / sps );
 	return smp_num * channel_num * bps / 8;
 }
 
@@ -112,12 +112,12 @@ int pxPulse_Noise::SamplingSize( int channel_num, int sps, int bps ) const
 #define NOISEEDITFLAG_OSC_PAN   0x0080
 #define NOISEEDITFLAG_UNCOVERED 0xffffff83
 
-//                                   01234567
-static const char          *_code = "PTNOISE-";
-//static const unsigned long _ver =  20051028; -v.0.9.2.3
-static const unsigned long _ver   =  20120418; // 16 wave types.
+//                                 01234567
+static const char        *_code = "PTNOISE-";
+//static const u32 _ver         =  20051028; -v.0.9.2.3
+static const u32 _ver           =  20120418; // 16 wave types.
 
-static bool _malloc_zero( void **pp, long size )
+static bool _malloc_zero( void **pp, s32 size )
 {
 	*pp = malloc( size ); if( !( *pp ) ) return false;
 	memset( *pp, 0, size );              return true ;
@@ -128,32 +128,32 @@ static void _free_null( void **pp )
 	if( *pp ){ free( *pp ); *pp = NULL; }
 }
 
-static bool _WriteOscillator( const pxNOISEDESIGN_OSCILLATOR *p_osc, pxwrDoc *p_doc, int *p_add )
+static bool _WriteOscillator( const pxNOISEDESIGN_OSCILLATOR *p_osc, pxwrDoc *p_doc, s32 *p_add )
 {
-	long work;
-	work = (long)p_osc->type         ; if( !p_doc->v_w( work, p_add ) ) return false;
-	work = (long)p_osc->b_rev        ; if( !p_doc->v_w( work, p_add ) ) return false;
-	work = (long)(p_osc->freq   * 10); if( !p_doc->v_w( work, p_add ) ) return false;
-	work = (long)(p_osc->volume * 10); if( !p_doc->v_w( work, p_add ) ) return false;
-	work = (long)(p_osc->offset * 10); if( !p_doc->v_w( work, p_add ) ) return false;
+	s32 work;
+	work = (s32)p_osc->type         ; if( !p_doc->v_w( work, p_add ) ) return false;
+	work = (s32)p_osc->b_rev        ; if( !p_doc->v_w( work, p_add ) ) return false;
+	work = (s32)(p_osc->freq   * 10); if( !p_doc->v_w( work, p_add ) ) return false;
+	work = (s32)(p_osc->volume * 10); if( !p_doc->v_w( work, p_add ) ) return false;
+	work = (s32)(p_osc->offset * 10); if( !p_doc->v_w( work, p_add ) ) return false;
 	return true;
 }
 
 static bool _ReadOscillator( pxNOISEDESIGN_OSCILLATOR *p_osc, pxwrDoc *p_doc, bool *pb_new )
 {
-	int work;
+	s32 work;
 	if( !p_doc->v_r( &work ) ) return false; p_osc->type     = (pxWAVETYPE)work;
 	if( p_osc->type >= pxWAVETYPE_num ){ *pb_new = true; return false; }
 	if( !p_doc->v_r( &work ) ) return false; p_osc->b_rev    = work ? true : false;
-	if( !p_doc->v_r( &work ) ) return false; p_osc->freq     = (float)work / 10;
-	if( !p_doc->v_r( &work ) ) return false; p_osc->volume   = (float)work / 10;
-	if( !p_doc->v_r( &work ) ) return false; p_osc->offset   = (float)work / 10;
+	if( !p_doc->v_r( &work ) ) return false; p_osc->freq     = (f32)work / 10;
+	if( !p_doc->v_r( &work ) ) return false; p_osc->volume   = (f32)work / 10;
+	if( !p_doc->v_r( &work ) ) return false; p_osc->offset   = (f32)work / 10;
 	return true;
 }
 
-static long _MakeFlags( const pxNOISEDESIGN_UNIT *pU )
+static s32 _MakeFlags( const pxNOISEDESIGN_UNIT *pU )
 {
-	long flags = 0;
+	s32 flags = 0;
 	flags |= NOISEEDITFLAG_ENVELOPE;
 	if( pU->pan                          ) flags |= NOISEEDITFLAG_PAN;
 	if( pU->main.type != pxWAVETYPE_None ) flags |= NOISEEDITFLAG_OSC_MAIN;
@@ -162,12 +162,12 @@ static long _MakeFlags( const pxNOISEDESIGN_UNIT *pU )
 	return flags;
 }
 
-bool pxPulse_Noise::Write( pxwrDoc *p_doc, long *p_add ) const
+bool pxPulse_Noise::Write( pxwrDoc *p_doc, s32 *p_add ) const
 {
 	bool  b_ret = false;
-	int   u, e, seek, num_seek, flags;
-	char  byte;
-	char  unit_num = 0;
+	s32   u, e, seek, num_seek, flags;
+	s8    byte;
+	s8    unit_num = 0;
 	const pxNOISEDESIGN_UNIT *pU;
 
 //	Fix();
@@ -203,7 +203,7 @@ bool pxPulse_Noise::Write( pxwrDoc *p_doc, long *p_add ) const
 			}
 			if( flags & NOISEEDITFLAG_PAN      )
 			{
-				byte = (char)pU->pan;
+				byte = (s8)pU->pan;
 				if( !p_doc->w( &byte, 1, 1 ) ) goto End;
 				seek++;
 			}
@@ -251,12 +251,12 @@ bool pxPulse_Noise::Load( const char* path, bool *p_bNew )
 bool pxPulse_Noise::Read( pxwrDoc *p_doc, bool *pb_new )
 {
 	bool b_ret = false;
-	int  flags;
-	char unit_num;
-	char byte;
-	unsigned long ver;
+	s32  flags;
+	s8   unit_num;
+	s8   byte;
+	u32  ver;
 	pxNOISEDESIGN_UNIT *pU;
-	char code[8];
+	s8   code[8];
 
 	Release();
 	
@@ -272,7 +272,7 @@ bool pxPulse_Noise::Read( pxwrDoc *p_doc, bool *pb_new )
 
 	if( !_malloc_zero( (void**)&_units, sizeof(pxNOISEDESIGN_UNIT) * _unit_num ) ) goto End;
 
-	for( int u = 0; u < _unit_num; u++ )
+	for( s32 u = 0; u < _unit_num; u++ )
 	{
 		pU = &_units[ u ];
 		pU->bEnable = true;
@@ -285,11 +285,11 @@ bool pxPulse_Noise::Read( pxwrDoc *p_doc, bool *pb_new )
 		{
 			if( !p_doc->v_r( &pU->enve_num ) ) goto End;
 			if( pU->enve_num > MAX_NOISEEDITENVELOPENUM ){ *pb_new = true; goto End; }
-			if( !_malloc_zero( (void**)&pU->enves, sizeof(s32POINT) * pU->enve_num ) ) goto End;
-			for( int e = 0; e < pU->enve_num; e++ )
+			if( !_malloc_zero( (void**)&pU->enves, sizeof(sPOINT) * pU->enve_num ) ) goto End;
+			for( s32 e = 0; e < pU->enve_num; e++ )
 			{
-				if( !p_doc->v_r( (int*)&pU->enves[ e ].x ) ) goto End;
-				if( !p_doc->v_r( (int*)&pU->enves[ e ].y ) ) goto End;
+				if( !p_doc->v_r( (s32*)&pU->enves[ e ].x ) ) goto End;
+				if( !p_doc->v_r( (s32*)&pU->enves[ e ].y ) ) goto End;
 			}
 		}
 		// パン
@@ -315,7 +315,7 @@ void pxPulse_Noise::Release()
 {
 	if( _units )
 	{
-		for( int u = 0; u < _unit_num; u++ )
+		for( s32 u = 0; u < _unit_num; u++ )
 		{
 			if( _units[ u ].enves ) _free_null( (void**)&_units[ u ].enves );
 		}
@@ -324,7 +324,7 @@ void pxPulse_Noise::Release()
 	}
 }
 
-bool pxPulse_Noise::Allocate( long unit_num, long envelope_num )
+bool pxPulse_Noise::Allocate( s32 unit_num, s32 envelope_num )
 {
 	bool b_ret = false;
 
@@ -333,11 +333,11 @@ bool pxPulse_Noise::Allocate( long unit_num, long envelope_num )
 	_unit_num = unit_num;
 	if( !_malloc_zero( (void**)&_units, sizeof(pxNOISEDESIGN_UNIT) * unit_num ) ) goto End;
 
-	for( int u = 0; u < unit_num; u++ )
+	for( s32 u = 0; u < unit_num; u++ )
 	{
 		pxNOISEDESIGN_UNIT *p_unit = &_units[ u ];
 		p_unit->enve_num = envelope_num;
-		if( !_malloc_zero( (void**)&p_unit->enves, sizeof(s32POINT) * p_unit->enve_num ) ) goto End;
+		if( !_malloc_zero( (void**)&p_unit->enves, sizeof(sPOINT) * p_unit->enve_num ) ) goto End;
 	}
 
 	b_ret = true;
@@ -358,9 +358,9 @@ bool pxPulse_Noise::Copy( pxPulse_Noise *p_dst ) const
 
 	if( _unit_num )
 	{
-		int  enve_num = _units[ 0 ].enve_num;
+		s32 enve_num = _units[ 0 ].enve_num;
 		if( !p_dst->Allocate( _unit_num, enve_num ) ) goto End;
-		for( int u = 0; u < _unit_num; u++ )
+		for( s32 u = 0; u < _unit_num; u++ )
 		{
 			p_dst->_units[ u ].bEnable  = _units[ u ].bEnable ;
 			p_dst->_units[ u ].enve_num = _units[ u ].enve_num;
@@ -368,8 +368,8 @@ bool pxPulse_Noise::Copy( pxPulse_Noise *p_dst ) const
 			p_dst->_units[ u ].main     = _units[ u ].main    ;
 			p_dst->_units[ u ].pan      = _units[ u ].pan     ;
 			p_dst->_units[ u ].volu     = _units[ u ].volu    ;
-			if( !( p_dst->_units[ u ].enves = (s32POINT*)malloc( sizeof(s32POINT) * enve_num ) ) ) goto End;
-			for( int e = 0; e < enve_num; e++ ) p_dst->_units[ u ].enves[ e ] = _units[ u ].enves[ e ];
+			if( !( p_dst->_units[ u ].enves = (sPOINT*)malloc( sizeof(sPOINT) * enve_num ) ) ) goto End;
+			for( s32 e = 0; e < enve_num; e++ ) p_dst->_units[ u ].enves[ e ] = _units[ u ].enves[ e ];
 		}
 	}
 
@@ -380,7 +380,7 @@ End:
 	return b_ret;
 }
 
-static int _CompareOsci( const pxNOISEDESIGN_OSCILLATOR *p_osc1, const pxNOISEDESIGN_OSCILLATOR *p_osc2 )
+static s32 _CompareOsci( const pxNOISEDESIGN_OSCILLATOR *p_osc1, const pxNOISEDESIGN_OSCILLATOR *p_osc2 )
 {
 	if( p_osc1->type   != p_osc2->type   ) return 1;
 	if( p_osc1->freq   != p_osc2->freq   ) return 1;
@@ -390,14 +390,14 @@ static int _CompareOsci( const pxNOISEDESIGN_OSCILLATOR *p_osc1, const pxNOISEDE
 	return 0;
 }
 
-int pxPulse_Noise::Compare     ( const pxPulse_Noise *p_src ) const
+s32 pxPulse_Noise::Compare     ( const pxPulse_Noise *p_src ) const
 {
 	if( !p_src ) return -1;
 
 	if( p_src->_smp_num_44k != _smp_num_44k ) return 1;
 	if( p_src->_unit_num    != _unit_num    ) return 1;
 
-	for( int u = 0; u < _unit_num; u++ )
+	for( s32 u = 0; u < _unit_num; u++ )
 	{
 		if( p_src->_units[ u ].bEnable  != _units[ u ].bEnable  ) return 1;
 		if( p_src->_units[ u ].enve_num != _units[ u ].enve_num ) return 1;
@@ -406,7 +406,7 @@ int pxPulse_Noise::Compare     ( const pxPulse_Noise *p_src ) const
 		if( _CompareOsci( &p_src->_units[ u ].freq, &_units[ u ].freq ) ) return 1;
 		if( _CompareOsci( &p_src->_units[ u ].volu, &_units[ u ].volu ) ) return 1;
 
-		for( int e = 0; e < _units[ u ].enve_num; e++ )
+		for( s32 e = 0; e < _units[ u ].enve_num; e++ )
 		{
 			if( _units[ u ].enves[ e ].x != _units[ u ].enves[ e ].x ) return 1;
 			if( _units[ u ].enves[ e ].y != _units[ u ].enves[ e ].y ) return 1;

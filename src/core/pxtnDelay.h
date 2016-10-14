@@ -23,17 +23,17 @@ enum DELAYUNIT
 class pxtnDelay
 {
 private:
-	bool           _b_played;
-	DELAYUNIT      _unit    ;
-	long           _group   ;
-	float          _rate    ;
-	float          _freq    ;
+	bool      _b_played;
+	DELAYUNIT _unit    ;
+	s32       _group   ;
+	f32       _rate    ;
+	f32       _freq    ;
 
-	int  _smp_num   ;
-	int  _offset    ;
-	int  *_bufs[ MAX_CHANNEL ];
-	int  _rate_long ;
-	//double rate; // .rate / 100 (%)
+	s32       _smp_num ;
+	s32       _offset  ;
+	s32       *_bufs[ MAX_CHANNEL ];
+	s32       _rate_long;
+	//f64 rate; // .rate / 100 (%)
 
 
 public :
@@ -41,24 +41,24 @@ public :
 	 pxtnDelay();
 	~pxtnDelay();
 
-	bool Tone_Ready( int beat_num, float beat_tempo, int sps, int bps );
-	void Tone_Supple( int ch, long *group_smps );
+	bool Tone_Ready( s32 beat_num, f32 beat_tempo, s32 sps, s32 bps );
+	void Tone_Supple( s32 ch, s32 *group_smps );
 	void Tone_Increment();
 	void Tone_Release  ();
 	void Tone_Clear    ();
 
-	bool Add_New    ( DELAYUNIT scale, float freq, float rate, long group );
+	bool Add_New    ( DELAYUNIT scale, f32 freq, f32 rate, s32 group );
 
 	bool Write( pxwrDoc *p_doc ) const;
 	bool Read ( pxwrDoc *p_doc, bool *pb_new_fmt );
 
 
 	DELAYUNIT get_unit ()const;
-	float     get_freq ()const;
-	float     get_rate ()const;
-	int       get_group()const;
+	f32       get_freq ()const;
+	f32       get_rate ()const;
+	s32       get_group()const;
 
-	void      Set( DELAYUNIT unit, float freq, float rate, int group );
+	void      Set( DELAYUNIT unit, f32 freq, f32 rate, s32 group );
 
 	bool      get_played()const;
 	void      set_played( bool b );

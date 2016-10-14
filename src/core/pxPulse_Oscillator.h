@@ -3,25 +3,25 @@
 
 #include "./pxTypedef.h"
 
-typedef double (* FUNCTION_OSCILLATORGET )( long index );
+typedef f64 (* FUNCTION_OSCILLATORGET )( s32 index );
 
 class pxPulse_Oscillator
 {
 private:
 
-	s32POINT *_p_point  ;
-	long     _point_num ;
-	long     _point_reso;
-	long     _volume    ;
-	long     _sample_num;
+	sPOINT *_p_point  ;
+	s32    _point_num ;
+	s32    _point_reso;
+	s32    _volume    ;
+	s32    _sample_num;
 
 public:
 
 	pxPulse_Oscillator();
 
-	void   ReadyGetSample( s32POINT *p_point, long point_num, long volume, long sample_num, long point_reso );
-	double GetOneSample_Overtone ( long index );
-	double GetOneSample_Coodinate( long index );
+	void ReadyGetSample( sPOINT *p_point, s32 point_num, s32 volume, s32 sample_num, s32 point_reso );
+	f64  GetOneSample_Overtone ( s32 index );
+	f64  GetOneSample_Coodinate( s32 index );
 };
 
 #endif

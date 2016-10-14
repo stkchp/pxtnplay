@@ -25,7 +25,12 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/pxwr)
 include_directories(${ALSA_INCLUDE_DIRS})
 include_directories(${VORBISFILE_INCLUDE_DIRS})
 
-link_libraries(${ALSA_LDFLAGS})
+# C++11
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+link_libraries(${ALSA_LIBRARY})
 link_libraries(${VORBISFILE_LDFLAGS})
 
 add_executable(pxtnplay ${pxtnplay_SRC})

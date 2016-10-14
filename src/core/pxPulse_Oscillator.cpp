@@ -12,7 +12,7 @@ pxPulse_Oscillator::pxPulse_Oscillator()
 	_point_reso  =    0;
 }
 
-void pxPulse_Oscillator::ReadyGetSample( s32POINT *p_point, long point_num, long volume, long sample_num, long point_reso )
+void pxPulse_Oscillator::ReadyGetSample( sPOINT *p_point, s32 point_num, s32 volume, s32 sample_num, s32 point_reso )
 {
 	_volume      = volume;
 	_p_point     = p_point;
@@ -21,31 +21,31 @@ void pxPulse_Oscillator::ReadyGetSample( s32POINT *p_point, long point_num, long
 	_point_reso  = point_reso;
 }
 
-double pxPulse_Oscillator::GetOneSample_Overtone( long index )
+f64 pxPulse_Oscillator::GetOneSample_Overtone( s32 index )
 {
-	long   o;
-	double work_double;
-	double pi = 3.1415926535897932;
-	double sss;
+	s32   o;
+	f64 work_double;
+	f64 pi = 3.1415926535897932;
+	f64 sss;
 
 	work_double = 0;
 	for( o = 0; o < _point_num; o++ )
 	{
 		sss          = 2 * pi * ( _p_point[ o ].x ) * index / _sample_num;
-		work_double += ( sin( sss ) * (double)_p_point[ o ].y / ( _p_point[ o ].x ) / 128 );
+		work_double += ( sin( sss ) * (f64)_p_point[ o ].y / ( _p_point[ o ].x ) / 128 );
 	}
 	work_double = work_double * _volume / 128;
 
 	return work_double;
 }
 
-double pxPulse_Oscillator::GetOneSample_Coodinate( long index )
+f64 pxPulse_Oscillator::GetOneSample_Coodinate( s32 index )
 {
-	long i;
-	long c;
-	long x1, y1, x2, y2;
-	long w, h;
-	double work;
+	s32 i;
+	s32 c;
+	s32 x1, y1, x2, y2;
+	s32 w, h;
+	f64 work;
 	
 	i = _point_reso * index / _sample_num;
 
@@ -84,7 +84,7 @@ double pxPulse_Oscillator::GetOneSample_Coodinate( long index )
 	i =  i - x1;
 	h = y2 - y1;
 
-	if( i ) work = (double)y1 + (double)h * (double)i / (double)w;
+	if( i ) work = (f64)y1 + (f64)h * (f64)i / (f64)w;
 	else    work = y1;
 
 	return work * _volume / 128 /128 ;

@@ -2,8 +2,8 @@
 
 #define MAX_CHANNEL             2
 
-#define MAX_TUNEUNITSTRUCT	   50 //    32
-#define MAX_TUNEWOICESTRUCT	  100 //    32
+#define MAX_TUNEUNITSTRUCT     50 //    32
+#define MAX_TUNEWOICESTRUCT   100 //    32
 #define MAX_EVENTNUM       500000 // 65536
 #define MAX_TUNEGROUPNUM        7
 #define MAX_TUNEDELAYSTRUCT     4

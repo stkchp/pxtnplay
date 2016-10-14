@@ -12,7 +12,7 @@ static bool _set( char **pp, const char *p )
 	if( !p || !pp ) return false;
 	if( *pp ){ free( *pp ); *pp = NULL; }
 
-	int len = strlen( p );
+	s32 len = strlen( p );
 	if( len <= 0 ) return false;
 
 	if( !( *pp = (char *)malloc( len + 1 ) ) ) return false;
@@ -24,8 +24,8 @@ static bool _set( char **pp, const char *p )
 
 static bool _read4_malloc( char **pp, pxwrDoc *p_doc )
 {
-	long size    = 0;
-	char *p_text = NULL;
+	s32  size    = 0;
+	char* p_text = NULL;
 
 	if( !pp ) return false;
 
@@ -58,7 +58,7 @@ static bool _read4_malloc( char **pp, pxwrDoc *p_doc )
 
 static bool _write4( const char *p, pxwrDoc *p_doc )
 {
-	long size = 0;
+	s32 size = 0;
 	size = strlen( p );
 	if( !p_doc->w( &size, 4,    1 ) ) return false;
 	if( !p_doc->w(  p,    1, size ) ) return false;

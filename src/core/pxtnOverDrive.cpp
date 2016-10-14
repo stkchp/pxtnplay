@@ -14,11 +14,11 @@ pxtnOverDrive::~pxtnOverDrive()
 {
 }
 
-float pxtnOverDrive::get_cut  ()const{ return _cut_f; }
-float pxtnOverDrive::get_amp  ()const{ return _amp_f; }
-int   pxtnOverDrive::get_group()const{ return _group; }
+f32 pxtnOverDrive::get_cut  ()const{ return _cut_f; }
+f32 pxtnOverDrive::get_amp  ()const{ return _amp_f; }
+s32 pxtnOverDrive::get_group()const{ return _group; }
 
-void  pxtnOverDrive::Set( float cut, float amp, int group )
+void  pxtnOverDrive::Set( f32 cut, f32 amp, s32 group )
 {
 	_cut_f = cut  ;
 	_amp_f = amp  ;
@@ -31,44 +31,44 @@ bool pxtnOverDrive::switch_played(){ _b_played = _b_played ? false : true; retur
 
 void pxtnOverDrive::Tone_Ready()
 {
-	_cut_16bit_top  = (long)( 32767 * ( 100 - _cut_f ) / 100 );
+	_cut_16bit_top = (s32)( 32767 * ( 100 - _cut_f ) / 100 );
 }
 
-void pxtnOverDrive::Tone_Supple( long *group_smps ) const
+void pxtnOverDrive::Tone_Supple( s32 *group_smps ) const
 {
 	if( !_b_played ) return;
-	long work = group_smps[ _group ];
-	if(      work >  _cut_16bit_top ) work = (long)(  _cut_16bit_top );
-	else if( work < -_cut_16bit_top ) work = (long)( -_cut_16bit_top );
-	group_smps[ _group ] = (long)( (float)work * _amp_f );
+	s32 work = group_smps[ _group ];
+	if(      work >  _cut_16bit_top ) work = (s32)(  _cut_16bit_top );
+	else if( work < -_cut_16bit_top ) work = (s32)( -_cut_16bit_top );
+	group_smps[ _group ] = (s32)( (f32)work * _amp_f );
 }
 
 
 // (8byte) =================
 typedef struct
 {
-	unsigned short xxx  ;
-	unsigned short group;
-	float          cut  ;
-	float          amp  ;
-	float          yyy  ;
+	u16 xxx  ;
+	u16 group;
+	f32 cut  ;
+	f32 amp  ;
+	f32 yyy  ;
 }
 _OVERDRIVESTRUCT;
 
 bool pxtnOverDrive::Write( pxwrDoc *p_doc ) const
 {
 	_OVERDRIVESTRUCT over;
-	long             size;
+	s32              size;
 
 	memset( &over, 0, sizeof( _OVERDRIVESTRUCT ) );
 	over.cut   = _cut_f;
 	over.amp   = _amp_f;
-	over.group = (unsigned short)_group;
+	over.group = (u16)_group;
 
 	// dela ----------
 	size = sizeof( _OVERDRIVESTRUCT );
-	if( !p_doc->w( &size, sizeof(unsigned long), 1 ) ) return false;
-	if( !p_doc->w( &over, size,                  1 ) ) return false;
+	if( !p_doc->w( &size, sizeof(u32), 1 ) ) return false;
+	if( !p_doc->w( &over, size,        1 ) ) return false;
 
 	return true;
 }
@@ -77,7 +77,7 @@ bool pxtnOverDrive::Write( pxwrDoc *p_doc ) const
 bool pxtnOverDrive::Read( pxwrDoc *p_doc, bool *pb_new_fmt )
 {
 	_OVERDRIVESTRUCT over;
-	long             size;
+	s32              size;
 
 	memset( &over, 0, sizeof(_OVERDRIVESTRUCT) );
 	if( !p_doc->r( &size, 4,                        1 ) ) return false;

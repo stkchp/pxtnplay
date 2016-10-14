@@ -24,7 +24,7 @@ void pxtnUnit::Tone_Init()
 	_portament_sample_num = 0;
 	_portament_sample_pos = 0;
 
-	for( int i = 0; i < MAX_CHANNEL; i++ )
+	for( s32 i = 0; i < MAX_CHANNEL; i++ )
 	{
 		_pan_vols [ i ] = 64;
 		_pan_times[ i ] =  0;
@@ -33,10 +33,10 @@ void pxtnUnit::Tone_Init()
 
 void pxtnUnit::Tone_Clear()
 {
-	for( int i = 0; i < MAX_CHANNEL; i++ ) memset( _pan_time_bufs[ i ], 0, sizeof(long) * pxtnBUFSIZE_TIMEPAN );
+	for( s32 i = 0; i < MAX_CHANNEL; i++ ) memset( _pan_time_bufs[ i ], 0, sizeof(s32) * pxtnBUFSIZE_TIMEPAN );
 }
 
-void pxtnUnit::Tone_Reset_and_2prm( int voice_idx, int env_rls_clock, float offset_freq )
+void pxtnUnit::Tone_Reset_and_2prm( s32 voice_idx, s32 env_rls_clock, f32 offset_freq )
 {
 	pxtnVOICETONE* p_tone = &_vts[ voice_idx ];
 	p_tone->life_count    = 0;
@@ -57,13 +57,13 @@ void pxtnUnit::set_woice( const pxtnWoice *p_w )
 
 void pxtnUnit::set_name ( const char *name )
 {
-	unsigned int max_ = MAX_TUNEUNITNAME;
+	u32 max_ = MAX_TUNEUNITNAME;
 
 	if( strlen( name ) > max_ )
 	{
 		memcpy( _name, name, max_ );
 		_name[ max_ ] = '\0';
-		unsigned char c = _name[ max_ -1 ];
+		u8 c = _name[ max_ -1 ];
 		bool b_zenkaku = false;
 		if( c >= 0x81 && c <= 0x9F ) b_zenkaku = true;
 		if( c >= 0xE0 && c <= 0xEF ) b_zenkaku = true;
@@ -92,7 +92,7 @@ bool pxtnUnit::get_played  () const{ return _bPlayed  ; }
 
 void pxtnUnit::Tone_ZeroLives()
 {
-	for( int i = 0; i < MAX_CHANNEL; i++ ) _vts[ i ].life_count = 0;
+	for( s32 i = 0; i < MAX_CHANNEL; i++ ) _vts[ i ].life_count = 0;
 }
 
 void pxtnUnit::Tone_KeyOn()
@@ -102,14 +102,14 @@ void pxtnUnit::Tone_KeyOn()
 	_key_margin = 0;
 }
 
-void pxtnUnit::Tone_Key( long key )
+void pxtnUnit::Tone_Key( s32 key )
 {
 	_key_start            = _key_now;
 	_key_margin           = key - _key_start;
 	_portament_sample_pos = 0;
 }
 
-void pxtnUnit::Tone_Pan_Volume( int ch, long pan )
+void pxtnUnit::Tone_Pan_Volume( s32 ch, s32 pan )
 {
 	_pan_vols[ 0 ] = 64;
 	_pan_vols[ 1 ] = 64;
@@ -120,7 +120,7 @@ void pxtnUnit::Tone_Pan_Volume( int ch, long pan )
 	}
 }
 
-void pxtnUnit::Tone_Pan_Time( int ch, long pan, int sps )
+void pxtnUnit::Tone_Pan_Time( s32 ch, s32 pan, s32 sps )
 {
 	_pan_times[ 0 ] = 0;
 	_pan_times[ 1 ] = 0;
@@ -140,17 +140,17 @@ void pxtnUnit::Tone_Pan_Time( int ch, long pan, int sps )
 	}
 }
 
-void pxtnUnit::Tone_Velocity ( long  val ){ _v_VELOCITY           = val; }
-void pxtnUnit::Tone_Volume   ( long  val ){ _v_VOLUME             = val; }
-void pxtnUnit::Tone_Portament( long  val ){ _portament_sample_num = val; }
-void pxtnUnit::Tone_GroupNo  ( long  val ){ _v_GROUPNO            = val; }
-void pxtnUnit::Tone_Correct  ( float val ){ _v_CORRECT            = val; }
+void pxtnUnit::Tone_Velocity ( s32  val ){ _v_VELOCITY           = val; }
+void pxtnUnit::Tone_Volume   ( s32  val ){ _v_VOLUME             = val; }
+void pxtnUnit::Tone_Portament( s32  val ){ _portament_sample_num = val; }
+void pxtnUnit::Tone_GroupNo  ( s32  val ){ _v_GROUPNO            = val; }
+void pxtnUnit::Tone_Correct  ( f32 val ){ _v_CORRECT            = val; }
 
 void pxtnUnit::Tone_Envelope()
 {
 	if( !_p_w ) return;
 
-	for( int v = 0; v < _p_w->get_voice_num(); v++ )
+	for( s32 v = 0; v < _p_w->get_voice_num(); v++ )
 	{
 		const pxtnVOICEWORK *p_work = _p_w->get_work( v );
 		pxtnVOICETONE       *p_tone = &_vts         [ v ];
@@ -174,34 +174,34 @@ void pxtnUnit::Tone_Envelope()
 	}
 }
 
-void pxtnUnit::Tone_Sample( bool b_mute, int ch_num, long time_pan_index, long smooth_smp )
+void pxtnUnit::Tone_Sample( bool b_mute, s32 ch_num, s32 time_pan_index, s32 smooth_smp )
 {
 	if( !_p_w               ) return;
 	if( b_mute && !_bPlayed )
 	{
-		for( int ch = 0; ch < ch_num; ch++ ) _pan_time_bufs[ ch ][ time_pan_index ] = 0;
+		for( s32 ch = 0; ch < ch_num; ch++ ) _pan_time_bufs[ ch ][ time_pan_index ] = 0;
 		return;
 	}
 
-	for( long ch = 0; ch < MAX_CHANNEL; ch++ )
+	for( s32 ch = 0; ch < MAX_CHANNEL; ch++ )
 	{
-		long time_pan_buf = 0;
+		s32 time_pan_buf = 0;
 
-		for( int v = 0; v < _p_w->get_voice_num(); v++ )
+		for( s32 v = 0; v < _p_w->get_voice_num(); v++ )
 		{
 			pxtnVOICETONE       *p_vt = &_vts         [ v ];
 			const pxtnVOICEWORK *p_vw = _p_w->get_work( v );
 
-			long work = 0;
+			s32 work = 0;
 
 			if( p_vt->life_count > 0 )
 			{
-				int pos = (int)p_vt->smp_pos * 4 + ch * 2;
-				work += *( (short*)&p_vw->p_smp_w[ pos ] );
+				s32 pos = (s32)p_vt->smp_pos * 4 + ch * 2;
+				work += *( (s16*)&p_vw->p_smp_w[ pos ] );
 
 				if( ch_num == 1 )
 				{
-					work += *( (short*)&p_vw->p_smp_w[ pos + 2 ] );
+					work += *( (s16*)&p_vw->p_smp_w[ pos + 2 ] );
 					work = work / 2;
 				}
 
@@ -223,13 +223,13 @@ void pxtnUnit::Tone_Sample( bool b_mute, int ch_num, long time_pan_index, long s
 	}
 }
 
-void pxtnUnit::Tone_Supple( long *group_smps, int ch, long time_pan_index ) const
+void pxtnUnit::Tone_Supple( s32 *group_smps, s32 ch, s32 time_pan_index ) const
 {
-	long idx = ( time_pan_index - _pan_times[ ch ] ) & ( pxtnBUFSIZE_TIMEPAN - 1 );
+	s32 idx = ( time_pan_index - _pan_times[ ch ] ) & ( pxtnBUFSIZE_TIMEPAN - 1 );
 	group_smps[ _v_GROUPNO ] += _pan_time_bufs[ ch ][ idx ];
 }
 
-long pxtnUnit::Tone_Increment_Key()
+s32 pxtnUnit::Tone_Increment_Key()
 {
 	// prtament..
 	if( _portament_sample_num && _key_margin )
@@ -237,7 +237,7 @@ long pxtnUnit::Tone_Increment_Key()
 		if( _portament_sample_pos < _portament_sample_num )
 		{
 			_portament_sample_pos++;
-			_key_now = (long)( _key_start + (double)_key_margin * _portament_sample_pos / _portament_sample_num );
+			_key_now = (s32)( _key_start + (f64)_key_margin * _portament_sample_pos / _portament_sample_num );
 		}
 		else
 		{
@@ -253,11 +253,11 @@ long pxtnUnit::Tone_Increment_Key()
 	return _key_now;
 }
 
-void pxtnUnit::Tone_Increment_Sample( float freq )
+void pxtnUnit::Tone_Increment_Sample( f32 freq )
 {
 	if( !_p_w ) return;
 
-	for( int v = 0; v < _p_w->get_voice_num(); v++ )
+	for( s32 v = 0; v < _p_w->get_voice_num(); v++ )
 	{
 		const pxtnVOICEWORK *p_vw = _p_w->get_work( v );
 		pxtnVOICETONE       *p_vt = &_vts         [ v ];
@@ -295,7 +295,7 @@ void pxtnUnit::Tone_Increment_Sample( float freq )
 
 const pxtnWoice *pxtnUnit::get_woice() const{ return _p_w; }
 
-pxtnVOICETONE *pxtnUnit::get_tone( int voice_idx )
+pxtnVOICETONE *pxtnUnit::get_tone( s32 voice_idx )
 {
 	return &_vts[ voice_idx ];
 }
@@ -304,20 +304,20 @@ pxtnVOICETONE *pxtnUnit::get_tone( int voice_idx )
 // v1x (20byte) ================= 
 typedef struct
 {
-	char           name[ MAX_TUNEUNITNAME ];
-	unsigned short type;
-	unsigned short group;
+	char name[ MAX_TUNEUNITNAME ];
+	u16  type ;
+	u16  group;
 }
 _x1x_UNIT;
 
-bool pxtnUnit::Read_v1x( pxwrDoc *p_doc, int *p_group )
+bool pxtnUnit::Read_v1x( pxwrDoc *p_doc, s32 *p_group )
 {
-	_x1x_UNIT       unit;
-	long            size;
+	_x1x_UNIT unit;
+	s32       size;
 
 	if( !p_doc->r( &size, 4,                   1 ) ) return false;
 	if( !p_doc->r( &unit, sizeof( _x1x_UNIT ), 1 ) ) return false;
-	if( (pxtnWOICETYPE)unit.type != pxtnWOICE_PCM      ) return false;
+	if( (pxtnWOICETYPE)unit.type != pxtnWOICE_PCM  ) return false;
 
 	memcpy( _name, unit.name, MAX_TUNEUNITNAME ); _name[ MAX_TUNEUNITNAME ] = '\0';
 	*p_group = unit.group;
@@ -331,16 +331,15 @@ bool pxtnUnit::Read_v1x( pxwrDoc *p_doc, int *p_group )
 
 typedef struct
 {
-	unsigned short type ;
-	unsigned short group;
+	u16 type ;
+	u16 group;
 }
 _x3x_UNIT;
 
-bool pxtnUnit::Read_v3x( pxwrDoc *p_doc, bool *pb_new_fmt, int *p_group )
+bool pxtnUnit::Read_v3x( pxwrDoc *p_doc, bool *pb_new_fmt, s32 *p_group )
 {
-	_x3x_UNIT       unit;
-
-	long            size;
+	_x3x_UNIT unit;
+	s32       size;
 
 	if( !p_doc->r( &size, 4,                   1 ) ) return false;
 	if( !p_doc->r( &unit, sizeof( _x3x_UNIT ), 1 ) ) return false;

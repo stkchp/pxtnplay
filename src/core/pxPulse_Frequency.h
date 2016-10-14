@@ -1,12 +1,14 @@
 #ifndef pxPulse_Frequency_H
 #define pxPulse_Frequency_H
 
+#include "./pxTypedef.h"
+
 class pxPulse_Frequency
 {
 private:
 
-	float  *_freq_table;
-	double _GetDivideOctaveRate( long divi );
+	f32 *_freq_table;
+	f64 _GetDivideOctaveRate( s32 divi );
 
 public:
 
@@ -15,9 +17,9 @@ public:
 
 	bool Init();
 
-	float        Get      ( long key     );
-	float        Get2     ( long key     );
-	const float* GetDirect( long *p_size );
+	f32        Get      ( s32 key     );
+	f32        Get2     ( s32 key     );
+	const f32* GetDirect( s32 *p_size );
 };
 
 #endif

@@ -4,7 +4,7 @@
 
 #include "./pxtnService.h"
 
-static bool _malloc_zero( void **pp, long size )
+static bool _malloc_zero( void **pp, s32 size )
 {
 	*pp = malloc( size );
 	if(  !( *pp ) ) return false;
@@ -91,7 +91,7 @@ bool pxtnService::_vmt_init()
 {
 	_vmt_freq = new pxPulse_Frequency();
 	if( !_vmt_freq->Init() ) return false;
-	if( !_malloc_zero( (void **)&_vmt_group_smps, sizeof(long) * _group_num ) ) return false;
+	if( !_malloc_zero( (void **)&_vmt_group_smps, sizeof(s32) * _group_num ) ) return false;
 	_vmt_b_init = true;
 	return true;
 }
@@ -101,7 +101,7 @@ bool pxtnService::_vmt_init()
 // ユニット ////////////////////////////////////
 ////////////////////////////////////////////////
 
-void pxtnService::_vmt_ResetVoiceOn( pxtnUnit *p_u, long w ) const
+void pxtnService::_vmt_ResetVoiceOn( pxtnUnit *p_u, s32 w ) const
 {
 	const pxtnVOICEWORK *p_work ;
 	const pxtnVOICEUNIT *p_voice;
@@ -112,12 +112,12 @@ void pxtnService::_vmt_ResetVoiceOn( pxtnUnit *p_u, long w ) const
 
 	p_u->set_woice( p_w );
 
-	for( int v = 0; v < p_w->get_voice_num(); v++ )
+	for( s32 v = 0; v < p_w->get_voice_num(); v++ )
 	{
 		p_work  = p_w->get_work ( v );
 		p_voice = p_w->get_voice( v );
 
-		float ofs_freq = 0;
+		f32 ofs_freq = 0;
 		if( p_voice->voice_flags & PTV_VOICEFLAG_BEATFIT )
 		{
 			ofs_freq = ( p_work->smp_body_w * _vmt_bt_tempo ) / ( 44100 * 60 * p_voice->correct );
@@ -126,14 +126,14 @@ void pxtnService::_vmt_ResetVoiceOn( pxtnUnit *p_u, long w ) const
 		{
 			ofs_freq = _vmt_freq->Get( EVENTDEFAULT_BASICKEY - p_voice->basic_key ) * p_voice->correct;
 		}
-		p_u->Tone_Reset_and_2prm( v, (int)( p_work->env_release / _vmt_clock_rate ), ofs_freq );
+		p_u->Tone_Reset_and_2prm( v, (s32)( p_work->env_release / _vmt_clock_rate ), ofs_freq );
 	}
 }
 
 
 void pxtnService::_vmt_InitUnitTone( void )
 {
-	for( int u = 0; u < _unit_num; u++ )
+	for( s32 u = 0; u < _unit_num; u++ )
 	{
 		pxtnUnit *p_u = Unit_Get_variable( u );
 		p_u->Tone_Init();
@@ -145,15 +145,15 @@ void pxtnService::_vmt_InitUnitTone( void )
 bool pxtnService::_vmt_PXTONE_SAMPLE( void *p_data )
 {
 	// envelope..
-	for( int u = 0; u < _unit_num;  u++ ) _units[ u ]->Tone_Envelope();
+	for( s32 u = 0; u < _unit_num;  u++ ) _units[ u ]->Tone_Envelope();
 
-	long clock = (long)( _vmt_smp_count / _vmt_clock_rate );
+	s32 clock = (s32)( _vmt_smp_count / _vmt_clock_rate );
 
 	// events..
 	for( ; _vmt_p_eve && _vmt_p_eve->clock <= clock; _vmt_p_eve = _vmt_p_eve->next )
 	{
-		int             u    = _vmt_p_eve->unit_no;
-		pxtnUnit        *p_u = _units[ u ];
+		s32           u    = _vmt_p_eve->unit_no;
+		pxtnUnit      *p_u = _units[ u ];
 		pxtnVOICETONE *p_tone;
 		const pxtnWoice *p_w;
 		const pxtnVOICEWORK *p_work;
@@ -163,13 +163,13 @@ bool pxtnService::_vmt_PXTONE_SAMPLE( void *p_data )
 		case EVENTKIND_ON       : 
 			{
 
-				int on_count = (int)( (_vmt_p_eve->clock + _vmt_p_eve->value - clock) * _vmt_clock_rate );
+				s32 on_count = (s32)( (_vmt_p_eve->clock + _vmt_p_eve->value - clock) * _vmt_clock_rate );
 				if( on_count <= 0 ){ p_u->Tone_ZeroLives(); break; }
 
 				p_u->Tone_KeyOn();
 
 				if( !( p_w = p_u->get_woice() ) ) break;
-				for( int v = 0; v < p_w->get_voice_num(); v++ )
+				for( s32 v = 0; v < p_w->get_voice_num(); v++ )
 				{
 					p_tone = p_u->get_tone( v );
 					p_work = p_w->get_work( v );
@@ -177,24 +177,24 @@ bool pxtnService::_vmt_PXTONE_SAMPLE( void *p_data )
 					// release..
 					if( p_work->env_release )
 					{
-						long       max_life_count1 = (long)( ( _vmt_p_eve->value - ( clock - _vmt_p_eve->clock ) ) * _vmt_clock_rate ) + p_work->env_release;
-						long       max_life_count2;
-						long       c    = _vmt_p_eve->clock + _vmt_p_eve->value + p_tone->env_release_clock;
+						s32        max_life_count1 = (s32)( ( _vmt_p_eve->value - ( clock - _vmt_p_eve->clock ) ) * _vmt_clock_rate ) + p_work->env_release;
+						s32        max_life_count2;
+						s32        c    = _vmt_p_eve->clock + _vmt_p_eve->value + p_tone->env_release_clock;
 						EVERECORD* next = NULL;
 						for( EVERECORD* p = _vmt_p_eve->next; p; p = p->next )
 						{
 							if( p->clock > c ) break;
 							if( p->unit_no == u && p->kind == EVENTKIND_ON ){ next = p; break; }
 						}
-						if( !next ) max_life_count2 = _vmt_smp_end - (long)( clock   * _vmt_clock_rate );
-						else        max_life_count2 = (long)( ( next->clock -      clock ) * _vmt_clock_rate );
+						if( !next ) max_life_count2 = _vmt_smp_end - (s32)( clock   * _vmt_clock_rate );
+						else        max_life_count2 = (s32)( ( next->clock -      clock ) * _vmt_clock_rate );
 						if( max_life_count1 < max_life_count2 ) p_tone->life_count = max_life_count1;
 						else                                    p_tone->life_count = max_life_count2;
 					}
 					// no-release..
 					else
 					{
-						p_tone->life_count = (long)( ( _vmt_p_eve->value - ( clock - _vmt_p_eve->clock ) ) * _vmt_clock_rate );
+						p_tone->life_count = (s32)( ( _vmt_p_eve->value - ( clock - _vmt_p_eve->clock ) ) * _vmt_clock_rate );
 					}
 
 					if( p_tone->life_count > 0 )
@@ -214,7 +214,7 @@ bool pxtnService::_vmt_PXTONE_SAMPLE( void *p_data )
 		case EVENTKIND_PAN_TIME  : p_u->Tone_Pan_Time  ( _ch, _vmt_p_eve->value, _sps ); break;
 		case EVENTKIND_VELOCITY  : p_u->Tone_Velocity  ( _vmt_p_eve->value ); break;
 		case EVENTKIND_VOLUME    : p_u->Tone_Volume    ( _vmt_p_eve->value ); break;
-		case EVENTKIND_PORTAMENT : p_u->Tone_Portament ( (long)( _vmt_p_eve->value * _vmt_clock_rate ) ); break;
+		case EVENTKIND_PORTAMENT : p_u->Tone_Portament ( (s32)( _vmt_p_eve->value * _vmt_clock_rate ) ); break;
 		case EVENTKIND_BEATCLOCK : break;
 		case EVENTKIND_BEATTEMPO : break;
 		case EVENTKIND_BEATNUM   : break;
@@ -222,36 +222,36 @@ bool pxtnService::_vmt_PXTONE_SAMPLE( void *p_data )
 		case EVENTKIND_LAST      : break;
 		case EVENTKIND_VOICENO   : _vmt_ResetVoiceOn( p_u, _vmt_p_eve->value ); break;
 		case EVENTKIND_GROUPNO   : p_u->Tone_GroupNo  (              _vmt_p_eve->value    ); break;
-		case EVENTKIND_CORRECT   : p_u->Tone_Correct  ( *( (float*)(&_vmt_p_eve->value) ) ); break;
+		case EVENTKIND_CORRECT   : p_u->Tone_Correct  ( *( (f32*)(&_vmt_p_eve->value) ) ); break;
 		}
 	}
 
 	// sampling..
-	for( int u = 0; u < _unit_num; u++ ) _units[ u ]->Tone_Sample( _vmt_b_mute, _ch, _vmt_time_pan_index, _vmt_smp_smooth );
+	for( s32 u = 0; u < _unit_num; u++ ) _units[ u ]->Tone_Sample( _vmt_b_mute, _ch, _vmt_time_pan_index, _vmt_smp_smooth );
 
-	for( long ch = 0; ch < _ch; ch++ )
+	for( s32 ch = 0; ch < _ch; ch++ )
 	{
-		for( int g = 0; g < _group_num; g++ ) _vmt_group_smps[ g ] = 0;
-		for( int u = 0; u < _unit_num ; u++ ) _units[ u ]->Tone_Supple( _vmt_group_smps, ch, _vmt_time_pan_index );
-		for( int o = 0; o < _ovdrv_num; o++ ) _ovdrvs[ o ]->Tone_Supple( _vmt_group_smps );
-		for( int d = 0; d < _delay_num; d++ ) _delays[ d ]->Tone_Supple( ch, _vmt_group_smps );
+		for( s32 g = 0; g < _group_num; g++ ) _vmt_group_smps[ g ] = 0;
+		for( s32 u = 0; u < _unit_num ; u++ ) _units[ u ]->Tone_Supple( _vmt_group_smps, ch, _vmt_time_pan_index );
+		for( s32 o = 0; o < _ovdrv_num; o++ ) _ovdrvs[ o ]->Tone_Supple( _vmt_group_smps );
+		for( s32 d = 0; d < _delay_num; d++ ) _delays[ d ]->Tone_Supple( ch, _vmt_group_smps );
 
 		// collect.
-		long work = 0;
-		for( int g = 0; g < _group_num; g++ ) work += _vmt_group_smps[ g ];
+		s32 work = 0;
+		for( s32 g = 0; g < _group_num; g++ ) work += _vmt_group_smps[ g ];
 
 		// fade..
 		if( _vmt_fade_fade ) work = work * ( _vmt_fade_count >> 8 ) / _vmt_fade_max;
 
 		// master volume
-		work = (long)( work * _vmt_master_vol );
+		work = (s32)( work * _vmt_master_vol );
 
 		// to buffer..
 		if( _bps == 8 ) work = work >> 8;
 		if( work >  _vmt_top ) work =  _vmt_top;
 		if( work < -_vmt_top ) work = -_vmt_top;
-		if( _bps == 8 ) *( (unsigned char *)p_data + ch ) = (unsigned char)( work + 128 );
-		else            *( (short         *)p_data + ch ) = (short        )( work       );
+		if( _bps == 8 ) *( (u8  *)p_data + ch ) = (u8 )( work + 128 );
+		else            *( (s16 *)p_data + ch ) = (s16)( work       );
 	}
 
 	// --------------
@@ -260,14 +260,14 @@ bool pxtnService::_vmt_PXTONE_SAMPLE( void *p_data )
 	_vmt_smp_count++;
 	_vmt_time_pan_index = ( _vmt_time_pan_index + 1 ) & ( pxtnBUFSIZE_TIMEPAN - 1 );
 
-	for( int u = 0; u < _unit_num;  u++ )
+	for( s32 u = 0; u < _unit_num;  u++ )
 	{
-		long key_now = _units[ u ]->Tone_Increment_Key();
+		s32 key_now = _units[ u ]->Tone_Increment_Key();
 		_units[ u ]->Tone_Increment_Sample( _vmt_freq->Get2( key_now ) *_vmt_smp_skip );
 	}
 
 	// delay
-	for( int d = 0; d < _delay_num; d++ ) _delays[ d ]->Tone_Increment();
+	for( s32 d = 0; d < _delay_num; d++ ) _delays[ d ]->Tone_Increment();
 
 	// fade out
 	if( _vmt_fade_fade < 0 )
@@ -286,7 +286,7 @@ bool pxtnService::_vmt_PXTONE_SAMPLE( void *p_data )
 	{
 		if( !_vmt_b_loop ) return false;
 		_vmt_smp_count = _vmt_smp_repeat;
-		int kousokuka_dekirukamo;
+		s32 kousokuka_dekirukamo;
 		_vmt_p_eve = evels->get_Records();
 		_vmt_InitUnitTone();
 	}
@@ -304,15 +304,15 @@ bool pxtnService::vmt_is_ready( void ) const
 	return _vmt_b_ready;
 }
 
-int pxtnService::vmt_get_now_clock( void ) const
+s32 pxtnService::vmt_get_now_clock( void ) const
 {
-	if( _vmt_clock_rate ) return (int)( _vmt_smp_count / _vmt_clock_rate );
+	if( _vmt_clock_rate ) return (s32)( _vmt_smp_count / _vmt_clock_rate );
 	return 0;
 }
 
 void pxtnService::vmt_set_mute( bool b ){ _vmt_b_mute = b; }
 void pxtnService::vmt_set_loop( bool b ){ _vmt_b_loop = b; }
-void pxtnService::vmt_set_fade( long fade, long msec )
+void pxtnService::vmt_set_fade( s32 fade, s32 msec )
 {
 	_vmt_fade_max = ( _sps * msec / 1000 ) >> 8;
 	if(      fade < 0 ){ _vmt_fade_fade  = -1; _vmt_fade_count = _vmt_fade_max << 8; } // out
@@ -362,7 +362,7 @@ bool pxtnService::vmt_preparation( const pxtnVOMITPREPARATION *p_tune/*, pxtnSer
 	_vmt_bt_num         = master->get_beat_num  ();
 	_vmt_bt_tempo       = master->get_beat_tempo();
 
-	_vmt_clock_rate     = (float)( 60.0f * (double)_sps / ( (double)_vmt_bt_tempo * (double)_vmt_bt_clock ) );
+	_vmt_clock_rate     = (f32)( 60.0f * (f64)_sps / ( (f64)_vmt_bt_tempo * (f64)_vmt_bt_clock ) );
 
 	_vmt_smp_skip       = ( 44100 / _sps );
 
@@ -371,9 +371,9 @@ bool pxtnService::vmt_preparation( const pxtnVOMITPREPARATION *p_tune/*, pxtnSer
 
 	_vmt_time_pan_index = 0;
 
-	_vmt_smp_start  = (long)( (double)p_tune->meas_start  * (double)_vmt_bt_num * (double)_vmt_bt_clock * _vmt_clock_rate );
-	_vmt_smp_end    = (long)( (double)p_tune->meas_end    * (double)_vmt_bt_num * (double)_vmt_bt_clock * _vmt_clock_rate );
-	_vmt_smp_repeat = (long)( (double)p_tune->meas_repeat * (double)_vmt_bt_num * (double)_vmt_bt_clock * _vmt_clock_rate );
+	_vmt_smp_start  = (s32)( (f64)p_tune->meas_start  * (f64)_vmt_bt_num * (f64)_vmt_bt_clock * _vmt_clock_rate );
+	_vmt_smp_end    = (s32)( (f64)p_tune->meas_end    * (f64)_vmt_bt_num * (f64)_vmt_bt_clock * _vmt_clock_rate );
+	_vmt_smp_repeat = (s32)( (f64)p_tune->meas_repeat * (f64)_vmt_bt_num * (f64)_vmt_bt_clock * _vmt_clock_rate );
 	if( p_tune->start_sample && p_tune->start_sample < _vmt_smp_end ) _vmt_smp_start = p_tune->start_sample;
 	_vmt_smp_count  = _vmt_smp_start;
 	_vmt_smp_smooth = _sps / 250; // (0.004sec) // (0.010sec)
@@ -400,13 +400,13 @@ End:
 }
 
 
-int pxtnService::vmt_get_sampling_offset( void ) const
+s32 pxtnService::vmt_get_sampling_offset( void ) const
 {
 	return _vmt_smp_count;
 }
 
 
-void pxtnService::vmt_set_master_volume( float v )
+void pxtnService::vmt_set_master_volume( f32 v )
 {
 	if( v < 0 ) v = 0;
 	if( v > 1 ) v = 1;
@@ -417,14 +417,14 @@ void pxtnService::vmt_set_master_volume( float v )
 // 
 ////////////////////
 
-bool pxtnService::Vomit( void* p_buf, long size )
+bool pxtnService::Vomit( void* p_buf, s32 size )
 {
-	long          t = 0;
-	long          offset;
-	long          block_size;
-	unsigned char bytes[ 4 ];
-	unsigned char *p;
-	bool          b_last = false;
+	s32  t = 0;
+	s32  offset;
+	s32  block_size;
+	u8   bytes[ 4 ];
+	u8   *p;
+	bool b_last = false;
 
 //	if( !_vmt_CS_Enter() ) return false;
 
@@ -434,8 +434,8 @@ bool pxtnService::Vomit( void* p_buf, long size )
 
 	if( _bps == 8 )
 	{
-		p = (unsigned char *)p_buf;
-		for( int b = 0; b < size; b++ )
+		p = (u8 *)p_buf;
+		for( s32 b = 0; b < size; b++ )
 		{
 			offset = ( t % block_size );
 			if( !offset && !_vmt_PXTONE_SAMPLE( bytes ) ) b_last = true;
@@ -445,8 +445,8 @@ bool pxtnService::Vomit( void* p_buf, long size )
 	}
 	else
 	{
-		p = (unsigned char *)p_buf;
-		for( int b = 0; b < size; b++ )
+		p = (u8 *)p_buf;
+		for( s32 b = 0; b < size; b++ )
 		{
 			offset = ( t % block_size );
 			if( !offset && !_vmt_PXTONE_SAMPLE( bytes ) ) b_last = true;
@@ -463,15 +463,15 @@ End:
 
 
 
-int pxtnService_vmt_CalcSampleNum( int meas_num, int beat_num, int sps, float beat_tempo )
+s32 pxtnService_vmt_CalcSampleNum( s32 meas_num, s32 beat_num, s32 sps, f32 beat_tempo )
 {
-	unsigned long total_beat_num;
-	unsigned long sample_num    ;
+	u32 total_beat_num;
+	u32 sample_num    ;
 
 	if( !beat_tempo ) return 0;
 
 	total_beat_num = meas_num * beat_num;
-	sample_num     = (unsigned long)( (double)sps * 60 * (double)total_beat_num / (double)beat_tempo );
+	sample_num     = (u32)( (f64)sps * 60 * (f64)total_beat_num / (f64)beat_tempo );
 
 	return sample_num;
 }

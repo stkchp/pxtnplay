@@ -36,9 +36,9 @@ enum pxWAVETYPE
 typedef struct
 {
 	pxWAVETYPE type  ;
-	float      freq  ;
-	float      volume;
-	float      offset;
+	f32        freq  ;
+	f32        volume;
+	f32        offset;
 	bool       b_rev ;
 }
 pxNOISEDESIGN_OSCILLATOR;
@@ -46,9 +46,9 @@ pxNOISEDESIGN_OSCILLATOR;
 typedef struct
 {
 	bool                     bEnable ;
-	int                      enve_num;
-	s32POINT                 *enves  ;
-	long                     pan     ;
+	s32                      enve_num;
+	sPOINT*                  enves   ;
+	s32                      pan     ;
 	pxNOISEDESIGN_OSCILLATOR main    ;
 	pxNOISEDESIGN_OSCILLATOR freq    ;
 	pxNOISEDESIGN_OSCILLATOR volu    ;
@@ -60,31 +60,31 @@ class pxPulse_Noise
 {
 private:
 
-	int                 _smp_num_44k;
-	long                _unit_num   ;
-	pxNOISEDESIGN_UNIT  *_units     ;
+	s32                 _smp_num_44k;
+	s32                 _unit_num   ;
+	pxNOISEDESIGN_UNIT* _units      ;
 
 public:
 	 pxPulse_Noise();
 	~pxPulse_Noise();
 
-	bool Write       ( pxwrDoc *p_doc, long *p_add       ) const;
-	bool Read        ( pxwrDoc *p_doc, bool *pb_new_fmt  );
+	bool Write       ( pxwrDoc* p_doc, s32* p_add        ) const;
+	bool Read        ( pxwrDoc* p_doc, bool* pb_new_fmt  );
 	bool Save        ( const char* path ) const;
-	bool Load        ( const char* path, bool *p_bNew );
-	void Release     ( );
-	bool Allocate    ( long unit_num, long envelope_num );
-	bool Copy        ( pxPulse_Noise *p_dst       ) const;
-	int  Compare     ( const pxPulse_Noise *p_src ) const;
-	void Fix( );
-	int  SamplingSize( int ch, int sps, int bps ) const;
+	bool Load        ( const char* path, bool* p_bNew );
+	void Release     ();
+	bool Allocate    ( s32 unit_num, s32 envelope_num );
+	bool Copy        ( pxPulse_Noise* p_dst       ) const;
+	s32  Compare     ( const pxPulse_Noise* p_src ) const;
+	void Fix();
+	s32  SamplingSize( s32 ch, s32 sps, s32 bps ) const;
 
-	void set_smp_num_44k( int num );
+	void set_smp_num_44k( s32 num );
 
-	int   get_unit_num   () const;
-	int   get_smp_num_44k() const;
-	float get_sec() const;
-	pxNOISEDESIGN_UNIT *get_unit( int u );
+	s32  get_unit_num   () const;
+	s32  get_smp_num_44k() const;
+	f32  get_sec() const;
+	pxNOISEDESIGN_UNIT* get_unit( s32 u );
 };
 
 #endif
