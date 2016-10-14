@@ -31,7 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### pxtnplay frontend
 
-- `src/*
+- `src/*`
 
 ```
 Copyright (c) 2016 stkchp
