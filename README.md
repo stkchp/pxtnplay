@@ -7,9 +7,8 @@ pxtone collage(.ptcol /.pptune) player for linux.
 
 ## Description
 
-[Pxtone](http://pxtone.org/) is original music format, written by [STUDIO PIXEL](http://studiopixel.sakura.ne.jp/).
-**pxtnplay** can play music file(.ptcol, .pptune) in simple CUI.
-
+[Pxtone](http://pxtone.org/) is original music format, written by [STUDIO PIXEL](http://studiopixel.sakura.ne.jp/).  
+**pxtnplay** can play music file(.ptcol, .pptune) created by using Pxtone Collage. Enjoy!
 
 - TODO: paste screenshot.
 
