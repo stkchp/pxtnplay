@@ -25,8 +25,8 @@ file(GLOB PXTNPLAY_SRC
 	"./src/core/*.cpp"
 	"./src/play/*.h"
 	"./src/play/*.cpp"
-	"./src/pxwr/*.h"
-	"./src/pxwr/*.cpp"
+	"./src/pxwr_ro/*.h"
+	"./src/pxwr_ro/*.cpp"
 	"./src/*.cpp"
 	"./src/*.h"
 )
@@ -38,7 +38,7 @@ add_compile_options(${VORBISFILE_CFLAGS})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/core)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/play)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/pxwr)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/pxwr_ro)
 include_directories(${ALSA_INCLUDE_DIRS})
 include_directories(${VORBISFILE_INCLUDE_DIRS})
 

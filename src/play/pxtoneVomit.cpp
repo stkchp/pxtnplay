@@ -53,7 +53,7 @@ bool pxtoneVomit::Read  ( pxwrDoc *p_doc )
 {
 	if( !_b_init ) return false;
 	
-	int event_num;
+	s32 event_num;
 
 	pxtnService *pxtn = (pxtnService*)_pxtn;
 
@@ -76,7 +76,7 @@ bool pxtoneVomit::Clear ()
 	return true;
 }
 
-bool pxtoneVomit::Start ( int sampling_position, float fade_in_sec )
+bool pxtoneVomit::Start ( s32 sampling_position, f32 fade_in_sec )
 {
 	if( !_b_init ) return false;
 
@@ -90,7 +90,7 @@ bool pxtoneVomit::Start ( int sampling_position, float fade_in_sec )
 	vomit.start_sample = sampling_position;
 	vomit.meas_end     = pxtn->master->get_play_meas  ();
 	vomit.meas_repeat  = pxtn->master->get_repeat_meas();
-	vomit.fadein_msec  = (int)( fade_in_sec * 1000 );
+	vomit.fadein_msec  = (s32)( fade_in_sec * 1000 );
 
 	if( !pxtn->vmt_preparation( &vomit ) ) return false;
 
@@ -98,7 +98,7 @@ bool pxtoneVomit::Start ( int sampling_position, float fade_in_sec )
 	return true;
 }
 
-bool pxtoneVomit::set_quality ( int ch, int sps, int bps )
+bool pxtoneVomit::set_quality ( s32 ch, s32 sps, s32 bps )
 {
 	if( !_b_init ) return false;
 	pxtnService *pxtn = (pxtnService*)_pxtn;
@@ -114,7 +114,7 @@ bool pxtoneVomit::set_loop    ( bool b_loop         )
 	return true;
 	
 }
-bool pxtoneVomit::set_volume  ( float volume        ) // 1.0f = 100%
+bool pxtoneVomit::set_volume  ( f32 volume          ) // 1.0f = 100%
 {
 	if( !_b_init ) return false;
 	pxtnService *pxtn = (pxtnService*)_pxtn;
@@ -122,11 +122,11 @@ bool pxtoneVomit::set_volume  ( float volume        ) // 1.0f = 100%
 	return true;
 }
 
-int  pxtoneVomit::set_fade    ( int fade, float sec )
+s32  pxtoneVomit::set_fade    ( s32 fade, f32 sec   )
 {
 	if( !_b_init ) return false;
 	pxtnService *pxtn = (pxtnService*)_pxtn;
-	pxtn->vmt_set_fade( fade, (int)( sec * 1000 ) );
+	pxtn->vmt_set_fade( fade, (s32)( sec * 1000 ) );
 	return pxtn->vmt_get_sampling_offset();
 }
 
@@ -158,7 +158,7 @@ const char *pxtoneVomit::get_last_error() const
 	return pxtn->get_last_error_text();
 }
 
-bool pxtoneVomit::get_info( int *p_beat_num, float *p_beat_tempo, int *p_beat_clock, int *p_meas_num ) const
+bool pxtoneVomit::get_info( s32 *p_beat_num, f32 *p_beat_tempo, s32 *p_beat_clock, s32 *p_meas_num ) const
 {
 	if( !_b_init ) return false;
 	pxtnService *pxtn = (pxtnService*)_pxtn;
@@ -167,21 +167,21 @@ bool pxtoneVomit::get_info( int *p_beat_num, float *p_beat_tempo, int *p_beat_cl
 	return true;
 }
 
-int  pxtoneVomit::get_meas_repeat() const
+s32  pxtoneVomit::get_meas_repeat() const
 {
 	if( !_b_init ) return 0;
 	pxtnService *pxtn = (pxtnService*)_pxtn;
 	return pxtn->master->get_repeat_meas();
 }
 
-int  pxtoneVomit::get_meas_play  () const
+s32  pxtoneVomit::get_meas_play  () const
 {
 	if( !_b_init ) return 0;
 	pxtnService *pxtn = (pxtnService*)_pxtn;
 	return pxtn->master->get_play_meas();
 }
 
-bool pxtoneVomit::vomit( void *p_buf, int buf_size )
+bool pxtoneVomit::vomit( void *p_buf, s32 buf_size )
 {
 	if( !_b_init ) return false;
 	pxtnService *pxtn = (pxtnService*)_pxtn;
@@ -189,7 +189,7 @@ bool pxtoneVomit::vomit( void *p_buf, int buf_size )
 	return _b_vomit;
 }
 
-int pxtoneVomit_Calc_sample_num( int meas_num, int beat_num, int sps, float beat_tempo )
+s32 pxtoneVomit_Calc_sample_num( s32 meas_num, s32 beat_num, s32 sps, f32 beat_tempo )
 {
 	return pxtnService_vmt_CalcSampleNum( meas_num, beat_num, sps, beat_tempo );
 }

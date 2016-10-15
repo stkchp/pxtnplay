@@ -9,6 +9,7 @@
 #define pxwrDoc_H
 
 #include <stdint.h>
+#include <pxTypedef.h>
 
 enum pxwrSEEK
 {
@@ -22,36 +23,36 @@ class pxwrDoc
 {
 private:
 	
-	char *_p    ;
+	s8   *_p    ;
 	bool _b_file;
-	int  _len   ;
-	int  _ofs   ;
+	s32  _len   ;
+	s32  _ofs   ;
 	
 public:
 	
 	 pxwrDoc();
 	~pxwrDoc();
 	
-	bool Open_path( const char *path, const char* mode );
-	bool SetRead  ( void *p, int len  );
-	bool Seek     ( int mode, int val );
+	bool Open_path( const char *path, const s8* mode );
+	bool SetRead  ( void *p, s32 len  );
+	bool Seek     ( s32 mode, s32 val );
 	void Close    ();
 	
-	bool w   ( const void *p, int size, int num );
-	bool r   (       void *p, int size, int num );	
+	bool w   ( const void *p, s32 size, s32 num );
+	bool r   (       void *p, s32 size, s32 num );	
 	void *GetFilePointer(){ return _p; }
 
-	int  v_w  ( int val, int *p_add );
-	bool v_r  ( int *p  );
+	s32  v_w  ( s32 val, s32 *p_add );
+	bool v_r  ( s32 *p  );
 
-	bool r_txt( void *p    , int buf_size );
-	bool gets ( char *p_buf, int buf_size );
+	bool r_txt( void *p    , s32 buf_size );
+	bool gets ( s8   *p_buf, s32 buf_size );
 
 	bool w_arg( const char *fmt, ... );
 
-	int FileSize() const;
+	s32 FileSize() const;
 };
 
-int  pxwrDoc_v_chk( int val );
+s32  pxwrDoc_v_chk( s32 val );
 
 #endif

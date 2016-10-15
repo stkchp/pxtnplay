@@ -5,6 +5,7 @@
 #ifndef pxtoneVomit_H
 #define pxtoneVomit_H
 
+#include <pxTypedef.h>
 #include <pxwrDoc.h>
 
 class pxtoneVomit
@@ -24,12 +25,12 @@ public :
 	bool Init ();
 	bool Read ( pxwrDoc *p_doc );
 	bool Clear();
-	bool Start( int sampling_position, float fade_in_sec );
+	bool Start( s32 sampling_position, f32 fade_in_sec );
 
-	bool set_quality ( int ch, int sps, int bps );
-	bool set_loop    ( bool b_loop         );
-	bool set_volume  ( float volume        ); // 1.0f = 100%
-	int  set_fade    ( int fade, float sec );
+	bool set_quality ( s32 ch, s32 sps, s32 bps );
+	bool set_loop    ( bool b_loop       );
+	bool set_volume  ( f32 volume        ); // 1.0f = 100%
+	s32  set_fade    ( s32 fade, f32 sec );
 
 	bool is_vomiting() const;
 
@@ -37,14 +38,14 @@ public :
 	const char *get_comment   () const;
 	const char *get_last_error() const;
 
-	bool get_info( int *p_beat_num, float *p_beat_tempo, int *p_beat_clock, int *p_meas_num ) const;
-	int  get_meas_repeat() const;
-	int  get_meas_play  () const;
+	bool get_info( s32 *p_beat_num, f32 *p_beat_tempo, s32 *p_beat_clock, s32 *p_meas_num ) const;
+	s32  get_meas_repeat() const;
+	s32  get_meas_play  () const;
 
-	bool vomit( void *p_buf, int buf_size );
+	bool vomit( void *p_buf, s32 buf_size );
 };
 
 
-int pxtoneVomit_Calc_sample_num( int meas_num, int beat_num, int sps, float beat_tempo );
+s32 pxtoneVomit_Calc_sample_num( s32 meas_num, s32 beat_num, s32 sps, f32 beat_tempo );
 
 #endif
