@@ -6,6 +6,7 @@
 
 #include <pxtnService.h>
 
+#include "config.h"
 #include "pxtnplay.h"
 
 namespace
@@ -35,14 +36,14 @@ void dump_help(char *command)
 };
 void dump_version()
 {
-	cout << "pxtnplay: " PXTNPLAY_VERSION << endl;
-	cout << "Pxtone Collage Library: " << get_pxtnVersion() << endl;
-	cout << "--------------------------------------------------\n"
-		"Copyright (c) 2016 STUDIO PIXEL\n"
-		"Copyright (c) 2016 stkchp\n"
-		"This software is released under the MIT License.\n"
-		"  http://opensource.org/licenses/mit-license.php\n"
-		"--------------------------------------------------\n"
+	cout << "pxtnplay " PXTNPLAY_VERSION << endl;
+	cout << "Pxtone Library: " << PXTONE_VERSION << endl;
+	cout << "----------------------------------------------------\n"
+		"  Copyright (c) 2016 STUDIO PIXEL\n"
+		"  Copyright (c) 2016 stkchp\n"
+		"  This software is released under the MIT License.\n"
+		"    http://opensource.org/licenses/mit-license.php\n"
+		"----------------------------------------------------\n"
 	     << endl;
 }
 void dump_channel_over() { cerr << "Error: channel number must be 1 or 2." << endl; }

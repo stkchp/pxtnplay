@@ -403,5 +403,3 @@ bool pxtnWoice::PTV_Save(const char *path) const
 	b_ret = PTV_Write(&doc, NULL) ? true : false;
 	return b_ret;
 }
-
-s32 get_pxtnVersion() { return _version; }

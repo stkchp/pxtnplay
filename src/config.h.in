@@ -1,0 +1,5 @@
+#pragma once
+
+#define PXTNPLAY_VERSION "${PXTNPLAY_VERSION}"
+#define PXTONE_VERSION   (${PXTONE_VERSION})
+

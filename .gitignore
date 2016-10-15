@@ -4,6 +4,7 @@ CMakeFiles
 CMakeFiles/*
 Makefile
 cmake_install.cmake
+src/config.h
 
 # Exe
 pxtnplay
