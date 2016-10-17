@@ -15,7 +15,6 @@ R"(Error: Can't open file(fopen error).)" "\n"
 R"(       Please specify Pxtone Music file.)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrCantReadFileIntoMemory =
-// ------------------------------------------------------------------------
 R"(Error: Can't read file to memory.)" "\n"
 R"(Note:  pxtnplay limit filesize upto 10Mb.)";
 // ------------------------------------------------------------------------
@@ -24,6 +23,15 @@ R"(Error: (Pxtone) Can't Initialize Pxtone Library.)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrPxtoneReadAsPxtone =
 R"(Error: (Pxtone) Read as ptcol file failure.)";
+// ------------------------------------------------------------------------
+constexpr auto& ppErrPxtoneSetLoop =
+R"(Error: (Pxtone) Cannot setup loop.)";
+// ------------------------------------------------------------------------
+constexpr auto& ppErrPxtoneSetVolume =
+R"(Error: (Pxtone) Read as ptcol file failure.)";
+// ------------------------------------------------------------------------
+constexpr auto& ppErrPxtoneSetQuality =
+R"(Error: (Pxtone) Cannot set quality(channels, rate, bitrate).)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrPxtoneStartFailure =
 R"(Error: (Pxtone) Cannot start creating buffer data.)";
@@ -44,10 +52,10 @@ constexpr auto& ppErrAlsaSetRateNear =
 R"(Error: (ALSA) Cannot set sample rate.)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrAlsaSetChannels =
-R"(Error: (ALSA) Cannot set sample rate.)";
+R"(Error: (ALSA) Cannot set channel count.)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrAlsaSetParameters =
-R"(Error: (ALSA) Cannot set sample rate.)";
+R"(Error: (ALSA) Cannot set parameters.)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrAlsaPrepareInterface =
 R"(Error: (ALSA) Cannot prepare audio interface for use.)";

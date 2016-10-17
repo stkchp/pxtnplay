@@ -167,17 +167,30 @@ bool run_pxtnplay(int argc, char *argv[])
 
     {
       // config
-      bool ret_b = false;
-      unsigned long ret_i, channels, rate, bitrate;
+      bool loop = false;
+      unsigned long volume, channels, rate, bitrate;
 
-      opt.get("loop", ret_b);
-      p_vomit.set_loop(ret_b);
-      opt.get("volume", ret_i);
-      p_vomit.set_volume(100.0f / ret_i);
+      opt.get("loop", loop);
+      opt.get("volume", volume);
       opt.get("channels", channels);
       opt.get("rate", rate);
       opt.get("bit-rate", bitrate);
-      p_vomit.set_quality(channels, rate, bitrate);
+
+      if (!p_vomit.set_loop(loop)) {
+        dump_error(ppErrPxtoneSetLoop);
+        dump_pxtone_error(p_vomit.get_last_error());
+        return false;
+      }
+      if (!p_vomit.set_volume(100.0f / volume)) {
+        dump_error(ppErrPxtoneSetVolume);
+        dump_pxtone_error(p_vomit.get_last_error());
+        return false;
+      }
+      if (!p_vomit.set_quality(channels, rate, bitrate)) {
+        dump_error(ppErrPxtoneSetQuality);
+        dump_pxtone_error(p_vomit.get_last_error());
+        return false;
+      }
     }
 
     // vomit play
