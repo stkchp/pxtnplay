@@ -222,7 +222,7 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
   opt.get("bit-rate", bitrate);
   opt.get("buffer-size", buffersize);
   if (bitrate == 8) {
-    hw_format = SND_PCM_FORMAT_S8;
+    hw_format = SND_PCM_FORMAT_U8;
   } else {
     hw_format = SND_PCM_FORMAT_S16_LE;
   }
@@ -264,7 +264,7 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
     return false;
   }
 
-  if ((err = snd_pcm_hw_params_set_channels(pv_h, hw_params, 2)) < 0) {
+  if ((err = snd_pcm_hw_params_set_channels(pv_h, hw_params, channels)) < 0) {
     dump_error(ppErrAlsaSetChannels);
     dump_alsa_error(snd_strerror(err));
     return false;
