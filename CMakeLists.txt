@@ -20,6 +20,7 @@ else(${CMAKE_MATCH_1})
 	message( FATAL_ERROR "You can not get PXTONE_VERSION, CMake will exit." )
 endif(${CMAKE_MATCH_1})
 
+
 file(GLOB PXTNPLAY_SRC
 	"./src/core/*.h"
 	"./src/core/*.cpp"
@@ -33,6 +34,7 @@ file(GLOB PXTNPLAY_SRC
 
 configure_file(src/config.h.in src/config.h)
 
+add_compile_options(-Wall -Wextra -Woverloaded-virtual -Wtype-limits)
 add_compile_options(${ALSA_CFLAGS})
 add_compile_options(${VORBISFILE_CFLAGS})
 
