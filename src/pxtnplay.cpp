@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include <pxtnService.h>
 #include <pxtoneVomit.h>
@@ -81,6 +82,7 @@ namespace pxtnplay
 using namespace pxtnplay::error;
 
 bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit);
+bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit);
 
 bool run_pxtnplay(int argc, char *argv[])
 {
@@ -115,7 +117,7 @@ bool run_pxtnplay(int argc, char *argv[])
     return false;
   }
 
-#if 0
+#if 1
   // for debug
   opt.dumpOptions();
 #endif
@@ -174,12 +176,20 @@ bool run_pxtnplay(int argc, char *argv[])
       p_vomit.set_volume(100.0f / ret_i);
       opt.get("channels", channels);
       opt.get("rate", rate);
-      opt.get("bitrate", bitrate);
+      opt.get("bit-rate", bitrate);
       p_vomit.set_quality(channels, rate, bitrate);
     }
 
     // vomit play
-    return alsa_play(opt, p_vomit);
+    {
+      bool dummy;
+      opt.get("dummy", dummy);
+      if (dummy) {
+        return dummy_play(opt, p_vomit);
+      } else {
+        return alsa_play(opt, p_vomit);
+      }
+    }
   }
 
   return true;
@@ -187,7 +197,6 @@ bool run_pxtnplay(int argc, char *argv[])
 
 bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 {
-  int i;
   int err;
   snd_pcm_t *pv_h;
   snd_pcm_hw_params_t *hw_params;
@@ -263,7 +272,7 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
   }
 
   // create buffer
-  int framesize = bitrate / 2 * channels;
+  int framesize = bitrate / 8 * channels;
   std::vector<std::uint8_t> buf((size_t)framesize * buffersize);
 
   // play
@@ -277,6 +286,38 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
   }
 
   snd_pcm_close(pv_h);
+  return true;
+}
+bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit)
+{
+  // get config
+  unsigned long channels, rate, bitrate, buffersize;
+  opt.get("channels", channels);
+  opt.get("rate", rate);
+  opt.get("bit-rate", bitrate);
+  opt.get("buffer-size", buffersize);
+
+  // create buffer
+  unsigned long framesize = bitrate / 8 * channels;
+  std::cout << "channels: " << channels << std::endl;
+  std::cout << "rate: " << rate << std::endl;
+  std::cout << "bit-rate: " << bitrate << std::endl;
+  std::cout << "buffer-size: " << buffersize << std::endl;
+  std::cout << "framesize: " << framesize << std::endl;
+  std::cout << "buffer(byte): " << framesize * buffersize << std::endl;
+  std::vector<std::uint8_t> buf;
+  buf.resize(framesize * buffersize);
+
+  std::cout << "buffer(byte): " << buf.size() << std::endl;
+
+  size_t count = 0;
+  // play
+  while (p_vomit.vomit(buf.data(), buf.size())) {
+    std::cout << "vomit: " << count << "\r";
+    count++;
+  }
+  std::cout << std::endl;
+
   return true;
 }
 }

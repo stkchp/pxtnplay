@@ -229,7 +229,7 @@ void ppOption::parseHelp(const char *str)
   // regex format
   // clang-format off
   static const char r_str[] =
-    R"((^[ \t]*(-([[:alnum:]])[ \t]+|())--([\w]+)[^\(#]*(\(([^\)]+)\)|())[^\(#]*))"
+    R"((^[ \t]*(-([[:alnum:]])[ \t]+|())--([a-zA-Z0-9\-_]+)[^\(#]*(\(([^\)]+)\)|())[^\(#]*))"
     R"(#[ \t]*([\w]+)[ \t]*<([^>]*)>[ \t]*<([0-9]+)>.*$)";
   // clang-format on
   std::regex reg(r_str);
