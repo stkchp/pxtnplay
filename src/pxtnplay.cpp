@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <vector>
 
@@ -111,13 +112,20 @@ bool run_pxtnplay(int argc, char *argv[])
       return true;
     }
   }
+  // enable quiet option
+  {
+    bool quiet = false;
+    if (opt.get("quiet", quiet) == true && quiet == true) {
+      std::cout.setstate(std::ios_base::failbit);
+    }
+  }
 
   if (opt.dumpInputfile().size() == 0) {
     dump_error(ppErrNoInputFile);
     return false;
   }
 
-#if 1
+#if 0
   // for debug
   opt.dumpOptions();
 #endif
@@ -151,19 +159,20 @@ bool run_pxtnplay(int argc, char *argv[])
     }
 
     // read pxtone file info
+    std::cout << "------------- music info -------------" << std::endl;
     std::cout << "Title: " << util::MS932toUTF8(p_vomit.get_title())
               << std::endl;
-    std::cout << "Comment: " << util::MS932toUTF8(p_vomit.get_comment())
+    std::cout << "  Comment: " << util::MS932toUTF8(p_vomit.get_comment())
               << std::endl;
 
     s32 beat_num, beat_clock, meas_num;
     f32 beat_tempo;
     p_vomit.get_info(&beat_num, &beat_tempo, &beat_clock, &meas_num);
 
-    std::cout << "    beat: " << beat_num << std::endl;
-    std::cout << "    beat tempo: " << beat_tempo << std::endl;
-    std::cout << "    beat clock: " << beat_clock << std::endl;
-    std::cout << "    measure: " << meas_num << std::endl;
+    std::cout << "  beat: " << beat_num << std::endl;
+    std::cout << "  beat tempo: " << beat_tempo << std::endl;
+    std::cout << "  beat clock: " << beat_clock << std::endl;
+    std::cout << "  measure: " << meas_num << std::endl;
 
     {
       // config
@@ -206,6 +215,33 @@ bool run_pxtnplay(int argc, char *argv[])
   }
 
   return true;
+}
+
+void show_player_info(option::ppOption &opt)
+{
+  // get config
+  unsigned long channels, rate, bitrate, buffersize;
+  opt.get("channels", channels);
+  opt.get("rate", rate);
+  opt.get("bit-rate", bitrate);
+  opt.get("buffer-size", buffersize);
+
+  // clang-format off
+  std::cout << "----------- player config ------------"         << std::endl;
+  std::cout << "  Quality: " << rate << "Hz / "
+		        << (bitrate  == 8 ? " 8"     : "16"    ) << "bit / "
+            << (channels == 1 ? "  mono" : "stereo")            << std::endl;
+  std::cout << "  Buffer size: " << std::right << std::setw(15)
+            << (buffersize * channels * bitrate / 8) << " byte" << std::endl;
+  std::cout << "--------------------------------------"         << std::endl;
+	// clang-formant on
+}
+
+void show_play_time(double span)
+{
+  static size_t count = 0;
+  std::cout << "Time: " << util::printAsTime(count * span) << "\r";
+  count++;
 }
 
 bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
@@ -290,10 +326,10 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
   }
 
   // create buffer
-  int framesize = bitrate / 8 * channels;
+  unsigned long framesize = bitrate / 8 * channels;
+  std::vector<std::uint8_t> buf((size_t)framesize * buffersize);
 
-  std::vector<std::uint8_t> buf;
-  buf.resize(framesize * buffersize);
+  show_player_info(opt);
 
   // play
 
@@ -303,11 +339,9 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
     return false;
   }
 
-  size_t count = 0;
-  double vomit_time = (double)buffersize / rate;
+  double vomit_span = (double)buffersize / rate;
   while (p_vomit.vomit(buf.data(), buf.size())) {
-    std::cout << "Time: " << util::printAsTime(count * vomit_time) << "\r";
-    count++;
+    show_play_time(vomit_span);
     if ((err = snd_pcm_writei(pv_h, buf.data(), buffersize)) != buffersize) {
       dump_error(ppErrAlsaWriteInterface);
       dump_alsa_error(snd_strerror(err));
@@ -331,16 +365,9 @@ bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 
   // create buffer
   unsigned long framesize = bitrate / 8 * channels;
-  std::cout << "channels: " << channels << std::endl;
-  std::cout << "rate: " << rate << std::endl;
-  std::cout << "bit-rate: " << bitrate << std::endl;
-  std::cout << "buffer-size: " << buffersize << std::endl;
-  std::cout << "framesize: " << framesize << std::endl;
+  std::vector<std::uint8_t> buf((size_t)framesize * buffersize);
 
-  std::vector<std::uint8_t> buf;
-  buf.resize(framesize * buffersize);
-
-  std::cout << "buffer(byte): " << buf.size() << std::endl;
+  show_player_info(opt);
 
   // play
   if (!p_vomit.Start(0, 0)) {
@@ -349,11 +376,9 @@ bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit)
     return false;
   }
 
-  size_t count = 0;
-  double vomit_time = (double)buffersize / rate;
+  double vomit_span = (double)buffersize / rate;
   while (p_vomit.vomit(buf.data(), buf.size())) {
-    std::cout << "Time: " << util::printAsTime(count * vomit_time) << "\r";
-    count++;
+    show_play_time(vomit_span);
   }
   std::cout << std::endl;
 

@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <cstring>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -47,14 +48,13 @@ std::string MS932toUTF8(const char *src)
 std::string printAsTime(double second)
 {
   std::uint64_t hours = second / 3600;
-  second -= hours * 3600.0;
-  std::uint16_t minutes = second / 60;
-  second -= minutes * 60.0;
+  std::uint16_t minutes = (uint16_t)(second / 60) % 60;
+  second -= (hours * 60 + minutes) * 60.0;
   std::ostringstream os;
   // clang-format off
   os << hours << ":"
 		 << (minutes < 10   ? "0" : "") << minutes << ":"
-		 << (second  < 10.0 ? "0" : "") << second;
+		 << (second  < 10.0 ? "0" : "") << std::fixed << std::setprecision(2) << second;
   // clang-format on
   return os.str();
 }
