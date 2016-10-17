@@ -27,26 +27,26 @@ const char help_string[] =
 "Play Pxtone Colage music files (.ptcop) in command line.\n"
 "\n"
 "General Options\n"
-"  -h --help        show this help and exit"                            "# bool <false> <0>\n"
-"  -v --version     show version and exit"                              "# bool <false> <0>\n"
-"  -q --quiet       no output"                                          "# bool <false> <0>\n"
-"  -f --config      config file"                                        "# string <>    <0>\n"
+"  -h --help        show this help and exit"                            "# bool <false>     <0>\n"
+"  -v --version     show version and exit"                              "# bool <false>     <0>\n"
+"  -q --quiet       no output"                                          "# bool <false>     <0>\n"
+"  -f --config      config file"                                        "# string <>        <0>\n"
 "\n"
 "Play Option\n"
-"  -B --buffer-size play buffer size [frame]"                           "# int  <441>   <1>\n"
-"  -c --channels    channels         (1,2)"                             "# int  <2>     <1>\n"
-"     --dummy       dummy output"                                       "# bool <false> <1>\n"
-"  -r --rate        sample rate      (44100,22050,11025) [KHz]"         "# int  <44100> <1>\n"
-"  -b --bit-rate    bit rate         (8,16) [bit]"                      "# int  <16>    <1>\n"
+"  -B --buffer-size play buffer size [1-44100] [frame]"                 "# int  <441>       <1>\n"
+"  -c --channels    channels         (1,2)"                             "# int  <2>         <1>\n"
+"     --dummy       dummy output"                                       "# bool <false>     <1>\n"
+"  -r --rate        sample rate      (44100,22050,11025) [KHz]"         "# int  <44100>     <1>\n"
+"  -b --bit-rate    bit rate         (8,16) [bit]"                      "# int  <16>        <1>\n"
 "\n"
 "ALSA Options\n"
-"  not implemented yet\n"
+"  -d --device      target alsa device"                                 "# string <default> <1>\n"
 "\n"
 "Pxtone Options\n"
-"  -l --loop        enable loop"                                        "# bool <false> <1>\n"
-"     --fadein      enable fade in   (0-10000) [ms]"                    "# int  <0>     <1>\n"
-"     --fadeout     enable fade out  (0-10000) [ms]"                    "# int  <0>     <1>\n"
-"  -V --volume      change volume    (0-100) [%]"                       "# int  <100>   <1>\n"
+"  -l --loop        enable loop"                                        "# bool <false>     <1>\n"
+"     --fadein      enable fade in   (0-10000) [ms]"                    "# int  <0>         <1>\n"
+"     --fadeout     enable fade out  (0-10000) [ms]"                    "# int  <0>         <1>\n"
+"  -V --volume      change volume    (0-100) [%]"                       "# int  <100>       <1>\n"
 /*----------------------------------------------------------------------*/;
 // clang-format on
 
@@ -217,16 +217,21 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
   // get config
   snd_pcm_format_t hw_format;
   unsigned long channels, rate, bitrate, buffersize;
+  std::string device;
   opt.get("channels", channels);
   opt.get("rate", rate);
   opt.get("bit-rate", bitrate);
   opt.get("buffer-size", buffersize);
+  opt.get("device", device);
+
   if (bitrate == 8) {
     hw_format = SND_PCM_FORMAT_U8;
   } else {
     hw_format = SND_PCM_FORMAT_S16_LE;
   }
-  if ((err = snd_pcm_open(&pv_h, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+
+  if ((err = snd_pcm_open(&pv_h, device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) <
+      0) {
     dump_error(ppErrAlsaOpenDevice);
     dump_alsa_error(snd_strerror(err));
     return false;
@@ -298,7 +303,11 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
     return false;
   }
 
+  size_t count = 0;
+  double vomit_time = (double)buffersize / rate;
   while (p_vomit.vomit(buf.data(), buf.size())) {
+    std::cout << "Time: " << util::printAsTime(count * vomit_time) << "\r";
+    count++;
     if ((err = snd_pcm_writei(pv_h, buf.data(), buffersize)) != buffersize) {
       dump_error(ppErrAlsaWriteInterface);
       dump_alsa_error(snd_strerror(err));
@@ -306,6 +315,7 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
       return false;
     }
   }
+  std::cout << std::endl;
 
   snd_pcm_close(pv_h);
   return true;
@@ -338,9 +348,11 @@ bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit)
     dump_pxtone_error(p_vomit.get_last_error());
     return false;
   }
+
   size_t count = 0;
+  double vomit_time = (double)buffersize / rate;
   while (p_vomit.vomit(buf.data(), buf.size())) {
-    std::cout << "vomit: " << count << "\r";
+    std::cout << "Time: " << util::printAsTime(count * vomit_time) << "\r";
     count++;
   }
   std::cout << std::endl;
