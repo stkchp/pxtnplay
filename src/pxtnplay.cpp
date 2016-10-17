@@ -145,7 +145,7 @@ bool run_pxtnplay(int argc, char *argv[])
     }
 
     if (!p_vomit.Read(&p_doc)) {
-      dump_error(ppErrReadAsPxtone);
+      dump_error(ppErrPxtoneReadAsPxtone);
       dump_pxtone_error(p_vomit.get_last_error());
       return false;
     }
@@ -273,9 +273,18 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 
   // create buffer
   int framesize = bitrate / 8 * channels;
-  std::vector<std::uint8_t> buf((size_t)framesize * buffersize);
+
+  std::vector<std::uint8_t> buf;
+  buf.resize(framesize * buffersize);
 
   // play
+
+  if (!p_vomit.Start(0, 0)) {
+    dump_error(ppErrPxtoneStartFailure);
+    dump_pxtone_error(p_vomit.get_last_error());
+    return false;
+  }
+
   while (p_vomit.vomit(buf.data(), buf.size())) {
     if ((err = snd_pcm_writei(pv_h, buf.data(), buffersize)) != buffersize) {
       dump_error(ppErrAlsaWriteInterface);
@@ -304,14 +313,19 @@ bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit)
   std::cout << "bit-rate: " << bitrate << std::endl;
   std::cout << "buffer-size: " << buffersize << std::endl;
   std::cout << "framesize: " << framesize << std::endl;
-  std::cout << "buffer(byte): " << framesize * buffersize << std::endl;
+
   std::vector<std::uint8_t> buf;
   buf.resize(framesize * buffersize);
 
   std::cout << "buffer(byte): " << buf.size() << std::endl;
 
-  size_t count = 0;
   // play
+  if (!p_vomit.Start(0, 0)) {
+    dump_error(ppErrPxtoneStartFailure);
+    dump_pxtone_error(p_vomit.get_last_error());
+    return false;
+  }
+  size_t count = 0;
   while (p_vomit.vomit(buf.data(), buf.size())) {
     std::cout << "vomit: " << count << "\r";
     count++;

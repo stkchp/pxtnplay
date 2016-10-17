@@ -22,8 +22,11 @@ R"(Note:  pxtnplay limit filesize upto 10Mb.)";
 constexpr auto& ppErrPxtoneInitFailure =
 R"(Error: (Pxtone) Can't Initialize Pxtone Library.)";
 // ------------------------------------------------------------------------
-constexpr auto& ppErrReadAsPxtone =
+constexpr auto& ppErrPxtoneReadAsPxtone =
 R"(Error: (Pxtone) Read as ptcol file failure.)";
+// ------------------------------------------------------------------------
+constexpr auto& ppErrPxtoneStartFailure =
+R"(Error: (Pxtone) Cannot start creating buffer data.)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrAlsaOpenDevice =
 R"(Error: (ALSA) Cannot open audio device.)";
