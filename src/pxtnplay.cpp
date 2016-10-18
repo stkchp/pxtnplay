@@ -34,7 +34,7 @@ const char help_string[] =
 "  -f --config      config file"                                        "# string <>        <0>\n"
 "\n"
 "Play Option\n"
-"  -B --buffer-size play buffer size [1-44100] [frame]"                 "# int  <441>       <1>\n"
+"  -B --buffer-size play buffer size (1-44100) [frame]"                 "# int  <441>       <1>\n"
 "  -c --channels    channels         (1,2)"                             "# int  <2>         <1>\n"
 "     --dummy       dummy output"                                       "# bool <false>     <1>\n"
 "  -r --rate        sample rate      (44100,22050,11025) [KHz]"         "# int  <44100>     <1>\n"
@@ -125,7 +125,7 @@ bool run_pxtnplay(int argc, char *argv[])
     return false;
   }
 
-#if 0
+#if 1
   // for debug
   opt.dumpOptions();
 #endif
@@ -234,7 +234,7 @@ void show_player_info(option::ppOption &opt)
   std::cout << "  Buffer size: " << std::right << std::setw(15)
             << (buffersize * channels * bitrate / 8) << " byte" << std::endl;
   std::cout << "--------------------------------------"         << std::endl;
-	// clang-formant on
+  // clang-format on
 }
 
 void show_play_time(double span)
@@ -334,8 +334,7 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
   show_player_info(opt);
 
   // play
-
-  if (!p_vomit.Start(0, fadein)) {
+  if (!p_vomit.Start(0, fadein / 1000.0f)) {
     dump_error(ppErrPxtoneStartFailure);
     dump_pxtone_error(p_vomit.get_last_error());
     return false;
@@ -359,7 +358,7 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 {
   // get config
-  unsigned long channels, rate, bitrate, buffersize,fadein, fadeout;
+  unsigned long channels, rate, bitrate, buffersize, fadein, fadeout;
   opt.get("channels", channels);
   opt.get("rate", rate);
   opt.get("bit-rate", bitrate);
@@ -374,7 +373,7 @@ bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit)
   show_player_info(opt);
 
   // play
-  if (!p_vomit.Start(0, fadein)) {
+  if (!p_vomit.Start(0, fadein / 1000.0f)) {
     dump_error(ppErrPxtoneStartFailure);
     dump_pxtone_error(p_vomit.get_last_error());
     return false;
