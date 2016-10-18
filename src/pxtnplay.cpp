@@ -190,7 +190,7 @@ bool run_pxtnplay(int argc, char *argv[])
         dump_pxtone_error(p_vomit.get_last_error());
         return false;
       }
-      if (!p_vomit.set_volume(100.0f / volume)) {
+      if (!p_vomit.set_volume(volume / 100.0f)) {
         dump_error(ppErrPxtoneSetVolume);
         dump_pxtone_error(p_vomit.get_last_error());
         return false;
