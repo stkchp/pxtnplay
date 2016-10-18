@@ -2,14 +2,10 @@
 
 #include <cstdint>
 #include <map>
-#include <memory>
 #include <string>
-#include <typeindex>
-#include <utility>
 #include <vector>
 
 #include <getopt.h>
-#include <unistd.h>
 
 namespace pxtnplay
 {

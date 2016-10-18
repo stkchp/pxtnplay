@@ -6,10 +6,7 @@
 #include <sstream>
 #include <string>
 
-#include <typeindex>
-
 #include <getopt.h>
-#include <unistd.h>
 
 #include "option.h"
 
