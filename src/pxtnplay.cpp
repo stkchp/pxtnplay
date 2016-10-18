@@ -125,7 +125,7 @@ bool run_pxtnplay(int argc, char *argv[])
     return false;
   }
 
-#if 1
+#if 0
   // for debug
   opt.dumpOptions();
 #endif
@@ -329,7 +329,7 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 
   // create buffer
   unsigned long framesize = bitrate / 8 * channels;
-  std::vector<std::uint8_t> buf((size_t)framesize * buffersize);
+  std::vector<std::uint8_t> buf((size_t)framesize * buffersize, 0);
 
   show_player_info(opt);
 
@@ -368,7 +368,7 @@ bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 
   // create buffer
   unsigned long framesize = bitrate / 8 * channels;
-  std::vector<std::uint8_t> buf((size_t)framesize * buffersize);
+  std::vector<std::uint8_t> buf((size_t)framesize * buffersize, 0);
 
   show_player_info(opt);
 
