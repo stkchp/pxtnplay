@@ -31,7 +31,7 @@ const char help_string[] =
 "  -h --help        show this help and exit"                            "# bool <false>     <0>\n"
 "  -v --version     show version and exit"                              "# bool <false>     <0>\n"
 "  -q --quiet       no output"                                          "# bool <false>     <0>\n"
-"  -f --config      config file"                                        "# string <>        <0>\n"
+// "  -f --config      config file"                                        "# string <>        <0>\n"
 "\n"
 "Play Option\n"
 "  -B --buffer-size play buffer size (1-44100) [frame]"                 "# int  <441>       <1>\n"
@@ -46,7 +46,7 @@ const char help_string[] =
 "Pxtone Options\n"
 "  -l --loop        enable loop"                                        "# bool <false>     <1>\n"
 "     --fadein      enable fade in   (0-10000) [ms]"                    "# int  <0>         <1>\n"
-"     --fadeout     enable fade out  (0-10000) [ms]"                    "# int  <0>         <1>\n"
+// "     --fadeout     enable fade out  (0-10000) [ms]"                    "# int  <0>         <1>\n"
 "  -V --volume      change volume    (0-100) [%]"                       "# int  <100>       <1>\n"
 /*----------------------------------------------------------------------*/;
 // clang-format on

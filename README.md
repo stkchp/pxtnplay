@@ -38,10 +38,9 @@ General Options
   -h --help        show this help and exit
   -v --version     show version and exit
   -q --quiet       no output
-  -f --config      config file
 
 Play Option
-  -B --buffer-size play buffer size [1-44100] [frame]
+  -B --buffer-size play buffer size (1-44100) [frame]
   -c --channels    channels         (1,2)
      --dummy       dummy output
   -r --rate        sample rate      (44100,22050,11025) [KHz]
@@ -53,7 +52,6 @@ ALSA Options
 Pxtone Options
   -l --loop        enable loop
      --fadein      enable fade in   (0-10000) [ms]
-     --fadeout     enable fade out  (0-10000) [ms]
   -V --volume      change volume    (0-100) [%]
 ```
 
