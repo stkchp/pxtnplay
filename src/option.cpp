@@ -206,7 +206,6 @@ std::string ppOption::_makeShortOptions()
     if (v.type == "bool") continue;
     s += ":";
   }
-  s += ":";
   return s;
 }
 
@@ -331,7 +330,7 @@ const std::string &ppOption::dumpInputfile() { return _inputfile; }
 void ppOption::dumpOptions()
 {
   for (auto v : _element) {
-    std::cout << v.lopt << ": ";
+    std::cout << v.lopt << "(" << ((v.sopt) > 0 ? v.sopt : '\0') << "): ";
     if (v.type == "bool") {
       bool res = false;
       get(v.lopt.c_str(), res);
