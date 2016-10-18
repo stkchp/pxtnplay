@@ -252,13 +252,15 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 
   // get config
   snd_pcm_format_t hw_format;
-  unsigned long channels, rate, bitrate, buffersize;
+  unsigned long channels, rate, bitrate, buffersize, fadein, fadeout;
   std::string device;
   opt.get("channels", channels);
   opt.get("rate", rate);
   opt.get("bit-rate", bitrate);
   opt.get("buffer-size", buffersize);
   opt.get("device", device);
+  opt.get("fadein", fadein);
+  opt.get("fadeout", fadeout);
 
   if (bitrate == 8) {
     hw_format = SND_PCM_FORMAT_U8;
@@ -333,7 +335,7 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 
   // play
 
-  if (!p_vomit.Start(0, 0)) {
+  if (!p_vomit.Start(0, fadein)) {
     dump_error(ppErrPxtoneStartFailure);
     dump_pxtone_error(p_vomit.get_last_error());
     return false;
@@ -357,11 +359,13 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 {
   // get config
-  unsigned long channels, rate, bitrate, buffersize;
+  unsigned long channels, rate, bitrate, buffersize,fadein, fadeout;
   opt.get("channels", channels);
   opt.get("rate", rate);
   opt.get("bit-rate", bitrate);
   opt.get("buffer-size", buffersize);
+  opt.get("fadein", fadein);
+  opt.get("fadeout", fadeout);
 
   // create buffer
   unsigned long framesize = bitrate / 8 * channels;
@@ -370,7 +374,7 @@ bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit)
   show_player_info(opt);
 
   // play
-  if (!p_vomit.Start(0, 0)) {
+  if (!p_vomit.Start(0, fadein)) {
     dump_error(ppErrPxtoneStartFailure);
     dump_pxtone_error(p_vomit.get_last_error());
     return false;
