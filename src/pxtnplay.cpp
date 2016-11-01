@@ -342,11 +342,14 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
   double vomit_span = (double)buffersize / rate;
   while (p_vomit.vomit(buf.data(), buf.size())) {
     show_play_time(vomit_span);
+
     if ((err = snd_pcm_writei(pv_h, buf.data(), buffersize)) != buffersize) {
-      dump_error(ppErrAlsaWriteInterface);
-      dump_alsa_error(snd_strerror(err));
-      snd_pcm_close(pv_h);
-      return false;
+      if (snd_pcm_recover(pv_h, err, 0) < 0) {
+        dump_error(ppErrAlsaWriteInterface);
+        dump_alsa_error(snd_strerror(err));
+        snd_pcm_close(pv_h);
+        return false;
+      }
     }
   }
   std::cout << std::endl;
