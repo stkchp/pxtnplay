@@ -38,7 +38,6 @@ const char help_string[] =
 "  -c --channels    channels         (1,2)"                             "# int  <2>         <1>\n"
 "     --dummy       dummy output"                                       "# bool <false>     <1>\n"
 "  -r --rate        sample rate      (44100,22050,11025) [KHz]"         "# int  <44100>     <1>\n"
-"  -b --bit-rate    bit rate         (8,16) [bit]"                      "# int  <16>        <1>\n"
 "\n"
 "ALSA Options\n"
 "  -d --device      target alsa device"                                 "# string <default> <1>\n"
