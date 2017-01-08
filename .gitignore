@@ -6,5 +6,9 @@ Makefile
 cmake_install.cmake
 src/config.h
 
+# build directory
+build
+build/*
+
 # Exe
 pxtnplay
