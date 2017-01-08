@@ -3,8 +3,9 @@
 #include <iostream>
 #include <vector>
 
-#include <pxtoneVomit.h>
-#include <pxwrDoc.h>
+#include <pxtnService.h>
+
+#include <pxtnError.h>
 
 #include <alsa/asoundlib.h>
 
@@ -75,14 +76,40 @@ void dump_alsa_error(const char *message)
 {
   cerr << "  ALSA Error: " << message << endl;
 }
+bool load_ptcop(pxtnService &pxtn, const char *path_src, pxtnERR &p_pxtn_err)
+{
+  bool b_ret = false;
+  pxtnDescriptor desc;
+  pxtnERR pxtn_err = pxtnERR_VOID;
+  FILE *fp = NULL;
+  int32_t event_num = 0;
+
+  if (!(fp = fopen(path_src, "rb"))) goto term;
+  if (!desc.set_file_r(fp)) goto term;
+
+  pxtn_err = pxtn.read(&desc);
+  if (pxtn_err != pxtnOK) goto term;
+  pxtn_err = pxtn.tones_ready();
+  if (pxtn_err != pxtnOK) goto term;
+
+  b_ret = true;
+term:
+
+  if (fp) fclose(fp);
+  if (!b_ret) pxtn.evels->Release();
+
+  if (p_pxtn_err) p_pxtn_err = pxtn_err;
+
+  return b_ret;
+}
 }
 
 namespace pxtnplay
 {
 using namespace pxtnplay::error;
 
-bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit);
-bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit);
+bool alsa_play(option::ppOption &opt, pxtnService &pxtn);
+bool dummy_play(option::ppOption &opt, pxtnService &pxtn);
 
 bool run_pxtnplay(int argc, char *argv[])
 {
@@ -138,77 +165,78 @@ bool run_pxtnplay(int argc, char *argv[])
     }
   }
 
-  pxwrDoc p_doc;
-
-  if (!p_doc.Open_path(opt.dumpInputfile().c_str(), "rb")) {
-    dump_error(ppErrCantReadFileIntoMemory);
-    return false;
-  }
   {
-    pxtoneVomit p_vomit;
-    if (!p_vomit.Init()) {
+    pxtnService pxtn;
+    pxtnERR pxtn_err = pxtnERR_VOID;
+    int32_t buf_size = 0;
+
+    pxtn_err = pxtn.init();
+    if (pxtn_err != pxtnOK) {
       dump_error(ppErrPxtoneInitFailure);
       return false;
     }
 
-    if (!p_vomit.Read(&p_doc)) {
-      dump_error(ppErrPxtoneReadAsPxtone);
-      dump_pxtone_error(p_vomit.get_last_error());
+    // set quality
+    {
+      unsigned long channels, rate;
+      opt.get("channels", channels);
+      opt.get("rate", rate);
+
+      if (!pxtn.set_destination_quality(channels, rate)) {
+        dump_error(ppErrPxtoneSetQuality);
+        return false;
+      }
+    }
+
+    // load file
+    if (!load_ptcop(pxtn, opt.dumpInputfile().c_str(), pxtn_err)) {
+      dump_error(ppErrCantLoadPtcopFile);
       return false;
     }
 
-    // read pxtone file info
+    // show pxtone file info
     std::cout << "------------- music info -------------" << std::endl;
-    std::cout << "Title: " << util::MS932toUTF8(p_vomit.get_title())
+    std::cout << "Title: "
+              << util::MS932toUTF8(pxtn.text->get_name_buf(&buf_size))
               << std::endl;
-    std::cout << "  Comment: " << util::MS932toUTF8(p_vomit.get_comment())
+    std::cout << "  Comment: "
+              << util::MS932toUTF8(pxtn.text->get_comment_buf(&buf_size))
               << std::endl;
 
-    s32 beat_num, beat_clock, meas_num;
-    f32 beat_tempo;
-    p_vomit.get_info(&beat_num, &beat_tempo, &beat_clock, &meas_num);
-
-    std::cout << "  beat: " << beat_num << std::endl;
-    std::cout << "  beat tempo: " << beat_tempo << std::endl;
-    std::cout << "  beat clock: " << beat_clock << std::endl;
-    std::cout << "  measure: " << meas_num << std::endl;
+    std::cout << "  beat: " << pxtn.master->get_beat_num() << std::endl;
+    std::cout << "  beat tempo: " << pxtn.master->get_beat_tempo() << std::endl;
+    std::cout << "  beat clock: " << pxtn.master->get_beat_clock() << std::endl;
+    std::cout << "  measure: " << pxtn.master->get_meas_num() << std::endl;
 
     {
-      // config
+      // set loop and volume
       bool loop = false;
-      unsigned long volume, channels, rate, bitrate;
+      unsigned long volume;
 
       opt.get("loop", loop);
       opt.get("volume", volume);
-      opt.get("channels", channels);
-      opt.get("rate", rate);
-      opt.get("bit-rate", bitrate);
 
-      if (!p_vomit.set_loop(loop)) {
+      int32_t smp_total = pxtn.moo_get_total_sample();
+
+      pxtnVOMITPREPARATION prep = {0};
+      prep.flags |= (loop ? pxtnVOMITPREPFLAG_loop : 0);
+      prep.start_pos_float = 0;
+      prep.master_volume = (volume / 100.0f);
+
+      if (!pxtn.moo_preparation(&prep)) {
         dump_error(ppErrPxtoneSetLoop);
-        dump_pxtone_error(p_vomit.get_last_error());
-        return false;
-      }
-      if (!p_vomit.set_volume(volume / 100.0f)) {
-        dump_error(ppErrPxtoneSetVolume);
-        dump_pxtone_error(p_vomit.get_last_error());
-        return false;
-      }
-      if (!p_vomit.set_quality(channels, rate, bitrate)) {
-        dump_error(ppErrPxtoneSetQuality);
-        dump_pxtone_error(p_vomit.get_last_error());
         return false;
       }
     }
 
-    // vomit play
+    // play
     {
       bool dummy;
       opt.get("dummy", dummy);
       if (dummy) {
-        return dummy_play(opt, p_vomit);
+        return dummy_play(opt, pxtn);
       } else {
-        return alsa_play(opt, p_vomit);
+        return alsa_play(opt, pxtn);
       }
     }
   }
@@ -219,20 +247,19 @@ bool run_pxtnplay(int argc, char *argv[])
 void show_player_info(option::ppOption &opt)
 {
   // get config
-  unsigned long channels, rate, bitrate, buffersize;
+  unsigned long channels, rate, buffersize;
   opt.get("channels", channels);
   opt.get("rate", rate);
-  opt.get("bit-rate", bitrate);
   opt.get("buffer-size", buffersize);
 
   // clang-format off
-  std::cout << "----------- player config ------------"         << std::endl;
+  std::cout << "----------- player config ------------"                  << std::endl;
   std::cout << "  Quality: " << rate << "Hz / "
-		        << (bitrate  == 8 ? " 8"     : "16"    ) << "bit / "
-            << (channels == 1 ? "  mono" : "stereo")            << std::endl;
+		        << (pxtnBITPERSAMPLE == 8 ? " 8"     : "16"    )             << "bit / "
+            << (channels == 1         ? "  mono" : "stereo")             << std::endl;
   std::cout << "  Buffer size: " << std::right << std::setw(15)
-            << (buffersize * channels * bitrate / 8) << " byte" << std::endl;
-  std::cout << "--------------------------------------"         << std::endl;
+            << (buffersize * channels * pxtnBITPERSAMPLE / 8) << " byte" << std::endl;
+  std::cout << "--------------------------------------"                  << std::endl;
   // clang-format on
 }
 
@@ -243,7 +270,7 @@ void show_play_time(double span)
   count++;
 }
 
-bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
+bool alsa_play(option::ppOption &opt, pxtnService &pxtn)
 {
   int err;
   snd_pcm_t *pv_h;
@@ -251,17 +278,16 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
 
   // get config
   snd_pcm_format_t hw_format;
-  unsigned long channels, rate, bitrate, buffersize, fadein, fadeout;
+  unsigned long channels, rate, buffersize, fadein, fadeout;
   std::string device;
   opt.get("channels", channels);
   opt.get("rate", rate);
-  opt.get("bit-rate", bitrate);
   opt.get("buffer-size", buffersize);
   opt.get("device", device);
   opt.get("fadein", fadein);
   opt.get("fadeout", fadeout);
 
-  if (bitrate == 8) {
+  if (pxtnBITPERSAMPLE == 8) {
     hw_format = SND_PCM_FORMAT_U8;
   } else {
     hw_format = SND_PCM_FORMAT_S16_LE;
@@ -327,63 +353,68 @@ bool alsa_play(option::ppOption &opt, pxtoneVomit &p_vomit)
   }
 
   // create buffer
-  unsigned long framesize = bitrate / 8 * channels;
+  unsigned long framesize = pxtnBITPERSAMPLE / 8 * channels;
   std::vector<std::uint8_t> buf((size_t)framesize * buffersize, 0);
 
   show_player_info(opt);
 
   // play
-  if (!p_vomit.Start(0, fadein / 1000.0f)) {
+  if (fadein > 0 && !pxtn.moo_set_fade(1, fadein / 1000.0f)) {
     dump_error(ppErrPxtoneStartFailure);
-    dump_pxtone_error(p_vomit.get_last_error());
     return false;
   }
 
   double vomit_span = (double)buffersize / rate;
-  while (p_vomit.vomit(buf.data(), buf.size())) {
+  int32_t res_size = buf.size();
+  while (pxtn.Moo(buf.data(), res_size) && res_size > 0) {
     show_play_time(vomit_span);
 
-    if ((err = snd_pcm_writei(pv_h, buf.data(), buffersize)) != buffersize) {
-      if (snd_pcm_recover(pv_h, err, 0) < 0) {
+    auto frame = snd_pcm_writei(pv_h, buf.data(), res_size);
+
+    if (frame < 0) {
+      if (snd_pcm_recover(pv_h, frame, 0) < 0) {
         dump_error(ppErrAlsaWriteInterface);
         dump_alsa_error(snd_strerror(err));
         snd_pcm_close(pv_h);
         return false;
       }
     }
+    res_size = buf.size();
   }
   std::cout << std::endl;
 
   snd_pcm_close(pv_h);
   return true;
 }
-bool dummy_play(option::ppOption &opt, pxtoneVomit &p_vomit)
+bool dummy_play(option::ppOption &opt, pxtnService &pxtn)
 {
   // get config
-  unsigned long channels, rate, bitrate, buffersize, fadein, fadeout;
+  unsigned long channels, rate, buffersize, fadein, fadeout;
   opt.get("channels", channels);
   opt.get("rate", rate);
-  opt.get("bit-rate", bitrate);
   opt.get("buffer-size", buffersize);
   opt.get("fadein", fadein);
   opt.get("fadeout", fadeout);
 
   // create buffer
-  unsigned long framesize = bitrate / 8 * channels;
+  unsigned long framesize = pxtnBITPERSAMPLE / 8 * channels;
   std::vector<std::uint8_t> buf((size_t)framesize * buffersize, 0);
 
   show_player_info(opt);
 
   // play
-  if (!p_vomit.Start(0, fadein / 1000.0f)) {
+  if (fadein > 0 && !pxtn.moo_set_fade(1, fadein / 1000.0f)) {
     dump_error(ppErrPxtoneStartFailure);
-    dump_pxtone_error(p_vomit.get_last_error());
     return false;
   }
 
   double vomit_span = (double)buffersize / rate;
-  while (p_vomit.vomit(buf.data(), buf.size())) {
+  std::cout << buf.size() << std::endl;
+  int32_t res_size = buf.size();
+
+  while (pxtn.Moo(buf.data(), res_size) && res_size > 0) {
     show_play_time(vomit_span);
+    res_size = buf.size();
   }
   std::cout << std::endl;
 

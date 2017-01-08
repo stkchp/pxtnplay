@@ -14,9 +14,8 @@ constexpr auto& ppErrCantOpenFile =
 R"(Error: Can't open file(fopen error).)" "\n"
 R"(       Please specify Pxtone Music file.)";
 // ------------------------------------------------------------------------
-constexpr auto& ppErrCantReadFileIntoMemory =
-R"(Error: Can't read file to memory.)" "\n"
-R"(Note:  pxtnplay limit filesize upto 10Mb.)";
+constexpr auto& ppErrCantLoadPtcopFile =
+R"(Error: Can't load file as pxtone file.)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrPxtoneInitFailure =
 R"(Error: (Pxtone) Can't Initialize Pxtone Library.)";
@@ -25,13 +24,10 @@ constexpr auto& ppErrPxtoneReadAsPxtone =
 R"(Error: (Pxtone) Read as ptcol file failure.)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrPxtoneSetLoop =
-R"(Error: (Pxtone) Cannot setup loop.)";
-// ------------------------------------------------------------------------
-constexpr auto& ppErrPxtoneSetVolume =
-R"(Error: (Pxtone) Read as ptcol file failure.)";
+R"(Error: (Pxtone) Cannot setup loop and volume.)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrPxtoneSetQuality =
-R"(Error: (Pxtone) Cannot set quality(channels, rate, bitrate).)";
+R"(Error: (Pxtone) Cannot set quality(channels, rate).)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrPxtoneStartFailure =
 R"(Error: (Pxtone) Cannot start creating buffer data.)";
