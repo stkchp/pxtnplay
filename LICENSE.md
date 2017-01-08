@@ -2,9 +2,7 @@
 
 ### Pxtone Collage Core Library
 
-- `src/core/*`
-- `src/play/*`
-- `src/pxwr/*`
+- `src/pxtone/*`
 
 ```
 Copyright (c) 2016 STUDIO PIXEL

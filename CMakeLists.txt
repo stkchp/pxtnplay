@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(PXTNPLAY VERSION 0.0.1 LANGUAGES CXX)
+project(PXTNPLAY VERSION 0.0.2 LANGUAGES CXX)
 
 find_package(ALSA REQUIRED)
 find_package(PkgConfig REQUIRED)

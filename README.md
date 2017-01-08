@@ -44,7 +44,6 @@ Play Option
   -c --channels    channels         (1,2)
      --dummy       dummy output
   -r --rate        sample rate      (44100,22050,11025) [KHz]
-  -b --bit-rate    bit rate         (8,16) [bit]
 
 ALSA Options
   -d --device      target alsa device
