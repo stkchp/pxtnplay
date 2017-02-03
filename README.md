@@ -78,7 +78,7 @@ Pxtone Options
 
 ## License
 
-[MIT](LICENCE.md)
+[MIT](LICENSE.md)
 
 ## Author
 
