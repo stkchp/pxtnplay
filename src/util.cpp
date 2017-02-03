@@ -21,7 +21,10 @@ std::string MS932toUTF8(const char *src)
 
   auto cd = iconv_open("UTF8//TRANSLIT", "MS932");
   if (cd == (iconv_t)-1) {
-    return std::string();
+    cd = iconv_open("UTF8//TRANSLIT", "CP932");
+    if (cd == (iconv_t)-1) {
+      return std::string();
+    }
   }
 
   // make src buffer
