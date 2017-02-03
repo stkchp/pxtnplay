@@ -32,32 +32,11 @@ R"(Error: (Pxtone) Cannot set quality(channels, rate).)";
 constexpr auto& ppErrPxtoneStartFailure =
 R"(Error: (Pxtone) Cannot start creating buffer data.)";
 // ------------------------------------------------------------------------
-constexpr auto& ppErrAlsaOpenDevice =
-R"(Error: (ALSA) Cannot open audio device.)";
+constexpr auto& ppErrLibaoOpenLive =
+R"(Error: (libao) Cannot open audio device.)";
 // ------------------------------------------------------------------------
-constexpr auto& ppErrAlsaAllocateParameter =
-R"(Error: (ALSA) Cannot initialize hardware parameter structure.)";
-// ------------------------------------------------------------------------
-constexpr auto& ppErrAlsaSetAccessType =
-R"(Error: (ALSA) Cannot set access type.)";
-// ------------------------------------------------------------------------
-constexpr auto& ppErrAlsaSetSampleFormat =
-R"(Error: (ALSA) Cannot set sample format.)";
-// ------------------------------------------------------------------------
-constexpr auto& ppErrAlsaSetRateNear =
-R"(Error: (ALSA) Cannot set sample rate.)";
-// ------------------------------------------------------------------------
-constexpr auto& ppErrAlsaSetChannels =
-R"(Error: (ALSA) Cannot set channel count.)";
-// ------------------------------------------------------------------------
-constexpr auto& ppErrAlsaSetParameters =
-R"(Error: (ALSA) Cannot set parameters.)";
-// ------------------------------------------------------------------------
-constexpr auto& ppErrAlsaPrepareInterface =
-R"(Error: (ALSA) Cannot prepare audio interface for use.)";
-// ------------------------------------------------------------------------
-constexpr auto& ppErrAlsaWriteInterface =
-R"(Error: (ALSA) Write to audio interface failed.)";
+constexpr auto& ppErrLibaoPlay =
+R"(Error: (libao) Something happend in playing sound.)";
 // ------------------------------------------------------------------------
 
 // clang-format on

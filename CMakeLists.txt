@@ -2,9 +2,16 @@ cmake_minimum_required(VERSION 3.0)
 
 project(PXTNPLAY VERSION 0.0.2 LANGUAGES CXX)
 
-find_package(ALSA REQUIRED)
+
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+#
+# required package
+#     pkgconfig + libao + vorbis(vorbisfile)
+#
 find_package(PkgConfig REQUIRED)
 
+pkg_search_module(AO REQIRED ao)
 pkg_search_module(VORBISFILE REQIRED vorbisfile)
 
 #
@@ -32,11 +39,11 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in
 	${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
 add_compile_options(-Wall -Wextra -Woverloaded-virtual -Wtype-limits)
-add_compile_options(${ALSA_CFLAGS})
+add_compile_options(${AO_CFLAGS})
 add_compile_options(${VORBISFILE_CFLAGS})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/pxtone)
-include_directories(${ALSA_INCLUDE_DIRS})
+include_directories(${AO_INCLUDE_DIRS})
 include_directories(${VORBISFILE_INCLUDE_DIRS})
 
 # C++11
@@ -44,7 +51,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-link_libraries(${ALSA_LIBRARY})
+link_libraries(${AO_LDFLAGS})
 link_libraries(${VORBISFILE_LDFLAGS})
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
 

@@ -1,0 +1,74 @@
+'\" t
+.\"     Title: pxtnplay
+.\"    Author: [see the "AUTHOR" section]
+.\" Generator: DocBook XSL Stylesheets v1.79.0 <http://docbook.sf.net/>
+.\"      Date: 10/16/2016
+.\"    Manual: Pxtnplay Manual
+.\"    Source: Pxtnplay 0.0.1
+.\"  Language: English
+.\"
+.TH "PXTNPLAY" "1" "10/16/2016" "Pxtnplay 0\&.0\&.1" "Pxtnplay Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+pxtnplay \- frobnicate the bar library
+.SH "SYNOPSIS"
+.sp
+pxtnplay [\-qv] [\-c \fBchannel\fR] \fBfile\fR \&...
+.SH "DESCRIPTION"
+.sp
+pxtnplay frobnicates the bar library by tweaking internal symbol tables\&. By default it parses all baz segments and rearranges them in reverse order by time for the xyzzy(1) linker to find them\&. The symdef entry is then compressed using the WBG (Whiz\-Bang\-Gizmo) algorithm\&. All files are processed in the order specified\&.
+.SH "OPTIONS"
+.sp
+\-b Do not write "busy" to stdout while processing\&.
+.sp
+\-c \fBconfig\-file\fR Use the alternate system wide \fBconfig\-file\fR instead of \fB/etc/foo\&.conf\fR\&. This overrides any FOOCONF environment variable\&.
+.sp
+\-a In addition to the baz segments, also parse the blurfl headers\&.
+.sp
+\-r Recursive mode\&. Operates as fast as lightning at the expense of a megabyte of virtual memory\&.
+.SH "FILES"
+.sp
+\fB~/\&.pxtnplayrc\fR User configuration file\&. See pxtnplay(5) for further details\&.
+.SH "ENVIRONMENT"
+.sp
+FOOCONF If non\-null the full pathname for an alternate system wide \fB/etc/foo\&.conf\fR\&. Overridden by the \-c option\&.
+.SH "DIAGNOSTICS"
+.sp
+The following diagnostics may be issued on stderr:
+.sp
+\fBBad magic number\&.\fR The input file does not look like an archive file\&.
+.sp
+\fBOld style baz segments\&.\fR foo can only handle new style baz segments\&. COBOL object libraries are not supported in this version\&.
+.SH "BUGS"
+.sp
+The command name should have been chosen more carefully to reflect its purpose\&.
+.SH "AUTHOR"
+.sp
+Jens Schweikhardt <\m[blue]\fBhowto@schweikhardt\&.net\fR\m[]\&\s-2\u[1]\d\s+2>
+.SH "SEE ALSO"
+.sp
+bar(1), foo(5), xyzzy(1), [Linux Man Page Howto]( \m[blue]\fBhttp://www\&.schweikhardt\&.net/man_page_howto\&.html\fR\m[])
+.SH "NOTES"
+.IP " 1." 4
+howto@schweikhardt.net
+.RS 4
+\%mailto:howto@schweikhardt.net
+.RE

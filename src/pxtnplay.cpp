@@ -7,7 +7,7 @@
 
 #include <pxtnError.h>
 
-#include <alsa/asoundlib.h>
+#include <ao/ao.h>
 
 #include "config.h"
 #include "error.h"
@@ -39,9 +39,9 @@ const char help_string[] =
 "     --dummy       dummy output"                                       "# bool <false>     <1>\n"
 "  -r --rate        sample rate      (44100,22050,11025) [KHz]"         "# int  <44100>     <1>\n"
 "\n"
-"ALSA Options\n"
-"  -d --device      target alsa device"                                 "# string <default> <1>\n"
-"\n"
+// "ALSA Options\n"
+// "  -d --device      target alsa device"                                 "# string <default> <1>\n"
+// "\n"
 "Pxtone Options\n"
 "  -l --loop        enable loop"                                        "# bool <false>     <1>\n"
 "     --fadein      enable fade in   (0-10000) [ms]"                    "# int  <0>         <1>\n"
@@ -60,7 +60,7 @@ void dump_version()
   cout << "Pxtone Library: " << PXTONE_VERSION << endl;
   cout << "----------------------------------------------------\n"
           "  Copyright (c) 2016 STUDIO PIXEL\n"
-          "  Copyright (c) 2016 stkchp\n"
+          "  Copyright (c) 2016-2017 stkchp\n"
           "  This software is released under the MIT License.\n"
           "    http://opensource.org/licenses/mit-license.php\n"
           "----------------------------------------------------\n"
@@ -75,16 +75,34 @@ void dump_alsa_error(const char *message)
 {
   cerr << "  ALSA Error: " << message << endl;
 }
-bool load_ptcop(pxtnService &pxtn, const char *path_src, pxtnERR &p_pxtn_err)
+bool load_file_to_memory(std::vector<char> &dst, const char *path)
+{
+  // read data upto PXTNPLAY_MAXSIZE
+  try {
+    std::ifstream ifs(path, std::ios::binary);
+    dst.resize(PXTNPLAY_MAXSIZE + 1);
+    ifs.read(dst.data(), dst.size());
+    auto readed = ifs.gcount();
+    dst.resize(readed);
+    if (!ifs.eof()) dst.clear();
+
+  } catch (...) {
+    dst.clear();
+  }
+
+  // release unused memory
+  dst.shrink_to_fit();
+
+  return dst.size() ? true : false;
+}
+bool load_ptcop(pxtnService &pxtn, std::vector<char> &dst, pxtnERR &p_pxtn_err)
 {
   bool b_ret = false;
   pxtnDescriptor desc;
   pxtnERR pxtn_err = pxtnERR_VOID;
-  FILE *fp = NULL;
   int32_t event_num = 0;
 
-  if (!(fp = fopen(path_src, "rb"))) goto term;
-  if (!desc.set_file_r(fp)) goto term;
+  if (!desc.set_memory_r(dst.data(), dst.size())) goto term;
 
   pxtn_err = pxtn.read(&desc);
   if (pxtn_err != pxtnOK) goto term;
@@ -94,7 +112,6 @@ bool load_ptcop(pxtnService &pxtn, const char *path_src, pxtnERR &p_pxtn_err)
   b_ret = true;
 term:
 
-  if (fp) fclose(fp);
   if (!b_ret) pxtn.evels->Release();
 
   if (p_pxtn_err) p_pxtn_err = pxtn_err;
@@ -107,7 +124,7 @@ namespace pxtnplay
 {
 using namespace pxtnplay::error;
 
-bool alsa_play(option::ppOption &opt, pxtnService &pxtn);
+bool pxtn_ao_play(option::ppOption &opt, pxtnService &pxtn);
 bool dummy_play(option::ppOption &opt, pxtnService &pxtn);
 
 bool run_pxtnplay(int argc, char *argv[])
@@ -165,6 +182,13 @@ bool run_pxtnplay(int argc, char *argv[])
   }
 
   {
+    std::vector<char> mem_data;
+    // load file to memory
+    if (!load_file_to_memory(mem_data, opt.dumpInputfile().c_str())) {
+      dump_error(ppErrCantLoadPtcopFile);
+      return false;
+    }
+
     pxtnService pxtn;
     pxtnERR pxtn_err = pxtnERR_VOID;
     int32_t buf_size = 0;
@@ -187,8 +211,8 @@ bool run_pxtnplay(int argc, char *argv[])
       }
     }
 
-    // load file
-    if (!load_ptcop(pxtn, opt.dumpInputfile().c_str(), pxtn_err)) {
+    // load memory as ptcop
+    if (!load_ptcop(pxtn, mem_data, pxtn_err)) {
       dump_error(ppErrCantLoadPtcopFile);
       return false;
     }
@@ -230,13 +254,7 @@ bool run_pxtnplay(int argc, char *argv[])
 
     // play
     {
-      bool dummy;
-      opt.get("dummy", dummy);
-      if (dummy) {
-        return dummy_play(opt, pxtn);
-      } else {
-        return alsa_play(opt, pxtn);
-      }
+      return pxtn_ao_play(opt, pxtn);
     }
   }
 
@@ -269,91 +287,46 @@ void show_play_time(double span)
   count++;
 }
 
-bool alsa_play(option::ppOption &opt, pxtnService &pxtn)
+bool pxtn_ao_play(option::ppOption &opt, pxtnService &pxtn)
 {
   int err;
-  snd_pcm_t *pv_h;
-  snd_pcm_hw_params_t *hw_params;
+  ao_device *device;
 
   // get config
-  snd_pcm_format_t hw_format;
   unsigned long channels, rate, buffersize, fadein, fadeout;
-  std::string device;
+  bool dummy;
   opt.get("channels", channels);
   opt.get("rate", rate);
   opt.get("buffer-size", buffersize);
-  opt.get("device", device);
   opt.get("fadein", fadein);
   opt.get("fadeout", fadeout);
+  opt.get("dummy", dummy);
 
-  if (pxtnBITPERSAMPLE == 8) {
-    hw_format = SND_PCM_FORMAT_U8;
-  } else {
-    hw_format = SND_PCM_FORMAT_S16_LE;
+  if (!dummy) {
+    int default_driver;
+    ao_sample_format smp_format = {0};
+    // libao initialize
+    ao_initialize();
+
+    default_driver = ao_default_driver_id();
+
+    smp_format.bits = pxtnBITPERSAMPLE;
+    smp_format.channels = channels;
+    smp_format.rate = rate;
+    smp_format.byte_format = AO_FMT_LITTLE;
+
+    device = ao_open_live(default_driver, &smp_format, NULL /* no options */);
+
+    if (device == NULL) {
+      dump_error(ppErrLibaoOpenLive);
+      return false;
+    }
   }
 
-  if ((err = snd_pcm_open(&pv_h, device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) <
-      0) {
-    dump_error(ppErrAlsaOpenDevice);
-    dump_alsa_error(snd_strerror(err));
-    return false;
-  }
-
-  if ((err = snd_pcm_hw_params_malloc(&hw_params)) < 0) {
-    dump_error(ppErrAlsaAllocateParameter);
-    dump_alsa_error(snd_strerror(err));
-    return false;
-  }
-
-  if ((err = snd_pcm_hw_params_any(pv_h, hw_params)) < 0) {
-    dump_error(ppErrAlsaAllocateParameter);
-    dump_alsa_error(snd_strerror(err));
-    return false;
-  }
-
-  if ((err = snd_pcm_hw_params_set_access(pv_h, hw_params,
-                                          SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
-    dump_error(ppErrAlsaSetAccessType);
-    dump_alsa_error(snd_strerror(err));
-    return false;
-  }
-
-  if ((err = snd_pcm_hw_params_set_format(pv_h, hw_params, hw_format)) < 0) {
-    dump_error(ppErrAlsaSetSampleFormat);
-    dump_alsa_error(snd_strerror(err));
-    return false;
-  }
-
-  unsigned int _rate = rate;
-  if ((err = snd_pcm_hw_params_set_rate_near(pv_h, hw_params, &_rate, 0)) < 0) {
-    dump_error(ppErrAlsaSetRateNear);
-    dump_alsa_error(snd_strerror(err));
-    return false;
-  }
-
-  if ((err = snd_pcm_hw_params_set_channels(pv_h, hw_params, channels)) < 0) {
-    dump_error(ppErrAlsaSetChannels);
-    dump_alsa_error(snd_strerror(err));
-    return false;
-  }
-
-  if ((err = snd_pcm_hw_params(pv_h, hw_params)) < 0) {
-    dump_error(ppErrAlsaSetParameters);
-    dump_alsa_error(snd_strerror(err));
-    return false;
-  }
-
-  snd_pcm_hw_params_free(hw_params);
-
-  if ((err = snd_pcm_prepare(pv_h)) < 0) {
-    dump_error(ppErrAlsaPrepareInterface);
-    dump_alsa_error(snd_strerror(err));
-    return false;
-  }
+  std::uint32_t buffer_size = pxtnBITPERSAMPLE / 8 * channels * buffersize;
 
   // create buffer
-  unsigned long framesize = pxtnBITPERSAMPLE / 8 * channels;
-  std::vector<std::uint8_t> buf((size_t)framesize * buffersize, 0);
+  std::vector<char> buf((size_t)buffer_size, 0);
 
   show_player_info(opt);
 
@@ -364,59 +337,26 @@ bool alsa_play(option::ppOption &opt, pxtnService &pxtn)
   }
 
   double vomit_span = (double)buffersize / rate;
-  int32_t res_size = buf.size();
-  while (pxtn.Moo(buf.data(), res_size) && res_size > 0) {
+  while (pxtn.Moo(buf.data(), buf.size())) {
     show_play_time(vomit_span);
 
-    auto frame = snd_pcm_writei(pv_h, buf.data(), res_size);
+    if (!dummy) {
+      err = ao_play(device, buf.data(), buf.size());
 
-    if (frame < 0) {
-      if (snd_pcm_recover(pv_h, frame, 0) < 0) {
-        dump_error(ppErrAlsaWriteInterface);
-        dump_alsa_error(snd_strerror(err));
-        snd_pcm_close(pv_h);
+      if (err == 0) {
+        std::cout << std::endl;
+        dump_error(ppErrLibaoPlay);
+        ao_close(device);
+        ao_shutdown();
         return false;
       }
     }
-    res_size = buf.size();
   }
   std::cout << std::endl;
-
-  snd_pcm_close(pv_h);
-  return true;
-}
-bool dummy_play(option::ppOption &opt, pxtnService &pxtn)
-{
-  // get config
-  unsigned long channels, rate, buffersize, fadein, fadeout;
-  opt.get("channels", channels);
-  opt.get("rate", rate);
-  opt.get("buffer-size", buffersize);
-  opt.get("fadein", fadein);
-  opt.get("fadeout", fadeout);
-
-  // create buffer
-  unsigned long framesize = pxtnBITPERSAMPLE / 8 * channels;
-  std::vector<std::uint8_t> buf((size_t)framesize * buffersize, 0);
-
-  show_player_info(opt);
-
-  // play
-  if (fadein > 0 && !pxtn.moo_set_fade(1, fadein / 1000.0f)) {
-    dump_error(ppErrPxtoneStartFailure);
-    return false;
+  if (!dummy) {
+    ao_close(device);
+    ao_shutdown();
   }
-
-  double vomit_span = (double)buffersize / rate;
-  std::cout << buf.size() << std::endl;
-  int32_t res_size = buf.size();
-
-  while (pxtn.Moo(buf.data(), res_size) && res_size > 0) {
-    show_play_time(vomit_span);
-    res_size = buf.size();
-  }
-  std::cout << std::endl;
-
   return true;
 }
 }

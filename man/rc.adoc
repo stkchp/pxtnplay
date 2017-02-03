@@ -1,0 +1,99 @@
+pxtnplayrc(5)
+=============
+
+NAME
+----
+
+pxtnplayrc - pxtnplay configuration file
+
+SYNOPSIS
+--------
+[verse]
+________________________________________________________________________________
+*set* 'variable' *=* 'value'
+________________________________________________________________________________
+
+
+
+DESCRIPTION
+-----------
+
+You can permanently set an option by putting it in the '~/pxtnplayrc' file. 
+The file consists of a serias of 'commands'.
+Each line of the file may contain only one command.
+
+The hash mark ('#') is used as a 'comment' character.
+All text after the comment character to the end of the line
+is ignored. You can use comments to annotate your initialization file.
+
+SET COMMAND
+-----------
+
+A few selective variables can be configured via the set command. The syntax is:
+
+[verse]
+*set* variables *=* value
+
+Examples:
+
+// TEST: pxtnplayrc
+--------------------------------------------------------------------------------
+set channel = 2 # number of channels
+--------------------------------------------------------------------------------
+
+The type of variables is either bool, int, string, or mixed.
+
+Valid bool values::
+
+	To set a bool variable to true use either "1", "true", or "yes", Any other value will set the variable to false.
+
+Valid int values::
+
+	A non-negative integer.
+
+Valid string values::
+
+	A string of characters. Optionally, use either ' or " as delimiters.
+
+Valid mixed values::
+
+	These values are composites of the above types. The valid values are specified in the description.
+
+
+Variables
+~~~~~~~~~
+
+The following variables can be set:
+
+'channel' (int)::
+
+	The number of channels. The default is 2 channel. Valid values are 1 or 2.
+
+
+AUTHOR
+------
+
+*pxtnplay* and this document::
+
+	*stkchp* <s&#x0040;tkch.net>
+
+Pxtone Library::
+
+	*Studio Pixel* <amaya.pixel&#x0040;gmail.com>
+
+SEE ALSO
+--------
+
+manpage:pxtnplay[1]
+
+
+Online resources::
+
+	. Homepage: https://github.com/stkchp/pxtnplay
+	. About Pxtone: http://pxtone.org/
+
+BUGS
+----
+
+Please see https://github.com/stkchp/pxtnplay/issues[Github Issues].
+
