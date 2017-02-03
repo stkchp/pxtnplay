@@ -3,7 +3,7 @@ pxtnplay
 
 ## Overview
 
-pxtone collage(.ptcol) player for linux.
+pxtone collage(.ptcol) player for linux or MacOSX.
 
 ## Description
 
@@ -15,17 +15,38 @@ pxtone collage(.ptcol) player for linux.
 ## Installation
 
 - Requirement
-	- Linux(kernel 2.32 or later)
+	- Linux(kernel 2.32 or later) or MacOSX(confirmed 10.12 only)
 	- c++11 compiler
 		- gcc 4.8.1 or later
 		- clang 3.3 or later
 	- cmake
-	- alsa-lib
+	- libao
 	- libvorbis
 
 ```bash
  $ cmake .
- $ make && make install
+ $ make
+```
+
+### Gentoo Linux
+
+```bash
+ $ emerge cmake libao libvorbis
+ $ git clone https://github.com/stkchp/pxtnplay.git
+ $ cd pxtnplay
+ $ cmake .
+ $ make
+```
+
+### MacOSX
+
+```bash
+ # 
+ $ brew install cmake libao libvorbis
+ $ git clone https://github.com/stkchp/pxtnplay.git
+ $ cd pxtnplay
+ $ cmake .
+ $ make
 ```
 
 ## Usage
@@ -45,13 +66,11 @@ Play Option
      --dummy       dummy output
   -r --rate        sample rate      (44100,22050,11025) [KHz]
 
-ALSA Options
-  -d --device      target alsa device
-
 Pxtone Options
   -l --loop        enable loop
      --fadein      enable fade in   (0-10000) [ms]
   -V --volume      change volume    (0-100) [%]
+
 ```
 
 
