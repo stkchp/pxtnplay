@@ -213,7 +213,7 @@ void ppOption::_makeLongOptions(std::vector<::option> &values)
                     _element[i].lopt.c_str(),            //
                     _element[i].type == "bool" ? 0 : 1,  //
                     nullptr,                             //
-                    i + GETOPT_LONG_INDEX};
+                    static_cast<int>(i + GETOPT_LONG_INDEX)};
     values.push_back(opt);
   }
   ::option opt = {nullptr, 0, nullptr, 0};

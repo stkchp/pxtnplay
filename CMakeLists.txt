@@ -53,7 +53,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 link_libraries(${AO_LDFLAGS})
 link_libraries(${VORBISFILE_LDFLAGS})
-set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
+
+if(APPLE)
+	link_libraries("-liconv")
+else(APPLE)
+	set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
+endif(APPLE)
 
 add_executable(pxtnplay ${PXTNPLAY_SRC})
 
