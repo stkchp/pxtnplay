@@ -3,7 +3,7 @@ pxtnplay
 
 ## Overview
 
-pxtone collage(.ptcol) player for linux or MacOSX.
+pxtone collage(.ptcol) player for linux or MacOS.
 
 ## Description
 
@@ -38,10 +38,11 @@ pxtone collage(.ptcol) player for linux or MacOSX.
  $ make
 ```
 
-### MacOSX
+### MacOS
+
+I use [Homebrew](http://brew.sh/) in MacOS. Please install Homebrew and run below command.
 
 ```bash
- # 
  $ brew install cmake libao libvorbis
  $ git clone https://github.com/stkchp/pxtnplay.git
  $ cd pxtnplay
