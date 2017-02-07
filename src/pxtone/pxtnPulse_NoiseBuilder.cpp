@@ -23,15 +23,15 @@ enum _RANDOMTYPE
 
 typedef struct
 {
-	double         incriment ;
-	double         offset    ;
-	double         volume    ;
-	const short *p_smp    ;
-	bool        bReverse  ;
-	_RANDOMTYPE ran_type  ;
-	int32_t         rdm_start ;
-	int32_t         rdm_margin;
-	int32_t         rdm_index ;
+	double       incriment ;
+	double       offset    ;
+	double       volume    ;
+	const short* p_smp     ;
+	bool         bReverse  ;
+	_RANDOMTYPE  ran_type  ;
+	int32_t      rdm_start ;
+	int32_t      rdm_margin;
+	int32_t      rdm_index ;
 }
 _OSCILLATOR;
 
@@ -46,12 +46,12 @@ typedef struct
 {
 	bool        bEnable;
 	double      pan[ 2 ];
-	int32_t         enve_index;
+	int32_t     enve_index;
 	double      enve_mag_start;
 	double      enve_mag_margin;
-	int32_t         enve_count;
-	int32_t         enve_num;
-	_POINT      *enves;
+	int32_t     enve_count;
+	int32_t     enve_num;
+	_POINT*     enves;
 
 	_OSCILLATOR main;
 	_OSCILLATOR freq;
@@ -511,7 +511,11 @@ pxtnPulse_PCM *pxtnPulse_NoiseBuilder::BuildNoise( pxtnPulse_Noise *p_noise, int
 
 	b_ret = true;
 End:
-	if( units ) pxtnMem_free( (void**)&units );
+	if( units )
+	{
+		for( int i = 0; i < unit_num; i++ ) pxtnMem_free( (void**)&units[ i ].enves );
+		pxtnMem_free( (void**)&units );
+	}
 
 	if( !b_ret && p_pcm ) SAFE_DELETE( p_pcm ); 
 

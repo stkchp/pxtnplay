@@ -184,14 +184,14 @@ bool pxtnWoice::Copy( pxtnWoice *p_dst ) const
 		num  = p_vc2->envelope.head_num + p_vc2->envelope.body_num + p_vc2->envelope.tail_num;
 		size = sizeof(pxtnPOINT) * num;
 		if( !pxtnMem_zero_alloc( (void **)&p_vc2->envelope.points, size ) ) goto End;
-		memcpy(                      p_vc2->envelope.points, p_vc1->envelope.points, size );
+		memcpy(                            p_vc2->envelope.points, p_vc1->envelope.points, size );
 
 		// wave
 		p_vc2->wave.num          = p_vc1->wave.num ;
 		p_vc2->wave.reso         = p_vc1->wave.reso;
-		size = sizeof(pxtnPOINT) * p_vc2->wave.num;
+		size = sizeof(pxtnPOINT) * p_vc2->wave.num ;
 		if( !pxtnMem_zero_alloc( (void **)&p_vc2->wave.points, size ) ) goto End;
-		memcpy( p_vc2->wave.points, p_vc1->wave.points, size );
+		memcpy(                            p_vc2->wave.points, p_vc1->wave.points, size );
 
 		if(  p_vc1->p_pcm ->Copy( p_vc2->p_pcm  ) != pxtnOK ) goto End;
 		if( !p_vc1->p_ptn ->Copy( p_vc2->p_ptn  )           ) goto End;

@@ -539,7 +539,7 @@ bool pxtnPulse_PCM::Copy_( pxtnPulse_PCM *p_dst, int32_t start, int32_t end ) co
 	size   = ( end - start ) * _ch * _bps / 8;
 	offset =         start   * _ch * _bps / 8;
 
-	if( !p_dst->Create( _ch, _sps, _bps, end - start ) != pxtnOK ) return false;
+	if( p_dst->Create( _ch, _sps, _bps, end - start ) != pxtnOK ) return false;
 
 	memcpy( p_dst->_p_smp, &_p_smp[ offset ], size );
 

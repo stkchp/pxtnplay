@@ -270,6 +270,7 @@ pxtnERR pxtnPulse_Noise::read( pxtnDescriptor *p_doc )
 
 	res = pxtnOK;
 term:
+	if( res != pxtnOK ) Release();
 
 	return res;
 }
