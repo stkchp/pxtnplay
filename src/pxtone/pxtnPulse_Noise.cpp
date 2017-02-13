@@ -42,9 +42,8 @@ pxtnPulse_Noise::pxtnPulse_Noise()
 
 pxtnPulse_Noise::~pxtnPulse_Noise()
 {
-	if( _units ) free( _units ); _units = NULL; _unit_num = 0;
+	Release();
 }
-
 
 #define NOISEDESIGNLIMIT_SMPNUM (48000 * 10)
 #define NOISEDESIGNLIMIT_ENVE_X ( 1000 * 10)
