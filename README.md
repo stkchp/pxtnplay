@@ -3,12 +3,12 @@ pxtnplay
 
 ## Overview
 
-pxtone collage(.ptcol) player for linux or MacOS.
+pxtone collage(.ptcop) player for linux or MacOS.
 
 ## Description
 
 [Pxtone](http://pxtone.org/) is original music format, written by [STUDIO PIXEL](http://studiopixel.sakura.ne.jp/).  
-**pxtnplay** can play music file(.ptcol) created by using Pxtone Collage. Enjoy!
+**pxtnplay** can play music file(.ptcop) created by using Pxtone Collage. Enjoy!
 
 ![pxtnplay-fs8](https://cloud.githubusercontent.com/assets/19767799/19877535/6cfb9178-a023-11e6-9fd4-4008f1de834e.png)
 

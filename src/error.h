@@ -21,7 +21,7 @@ constexpr auto& ppErrPxtoneInitFailure =
 R"(Error: (Pxtone) Can't Initialize Pxtone Library.)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrPxtoneReadAsPxtone =
-R"(Error: (Pxtone) Read as ptcol file failure.)";
+R"(Error: (Pxtone) Read as ptcop file failure.)";
 // ------------------------------------------------------------------------
 constexpr auto& ppErrPxtoneSetLoop =
 R"(Error: (Pxtone) Cannot setup loop and volume.)";
