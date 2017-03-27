@@ -39,6 +39,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in
 	${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
 add_compile_options(-Wall -Wextra -Woverloaded-virtual -Wtype-limits)
+add_compile_options(-DpxINCLUDE_OGGVORBIS)
 add_compile_options(${AO_CFLAGS})
 add_compile_options(${VORBISFILE_CFLAGS})
 

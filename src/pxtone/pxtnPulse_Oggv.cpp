@@ -206,6 +206,7 @@ pxtnERR pxtnPulse_Oggv::Decode( pxtnPulse_PCM * p_pcm ) const
 
     vi    = ov_info( &vf,-1 );
 	
+	{
 	int32_t current_section;
 	char    pcmout[ 4096 ] = {0}; //take 4k out of the data segment, not the stack
 	{
@@ -228,6 +229,7 @@ pxtnERR pxtnPulse_Oggv::Decode( pxtnPulse_PCM * p_pcm ) const
 			p += ret;
 		}
 		while( ret );
+	}
 	}
     
     // end.
